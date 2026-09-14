@@ -122,12 +122,42 @@ aws iam put-role-policy --role-name "${SCHEDULER_ROLE_NAME}" --policy-name pullb
   ]
 }'
 
+# The Anthropic key is read from the .env the user placed, passed straight into
+# the function configuration, and never printed. Without it the scheduled pass
+# still runs, but only the deterministic matcher, with no identity reading.
+LAMBDA_ENV="PULLBACK_RUN_AGENT=1"
+if [ -f "${REPO_ROOT}/.env" ]; then
+  ANTHROPIC_KEY="$(grep -m1 '^ANTHROPIC_API_KEY=' "${REPO_ROOT}/.env" | cut -d= -f2- | tr -d '"'"'"'\r')"
+  if [ -n "${ANTHROPIC_KEY}" ]; then
+    LAMBDA_ENV="${LAMBDA_ENV},ANTHROPIC_API_KEY=${ANTHROPIC_KEY}"
+    echo "== anthropic key found in .env, the scheduled pass will read identity =="
+  fi
+else
+  echo "== no .env, the scheduled pass will run deterministic matching only =="
+fi
+
 echo "== packaging lambda =="
 rm -rf "${BUILD_DIR}" "${ZIP_PATH}"
 mkdir -p "${BUILD_DIR}"
-# boto3 ships in the python3.12 Lambda runtime already; httpx does not, so it
-# is the only third-party dependency that needs vendoring into the zip.
-"${REPO_ROOT}/.venv/bin/pip" install --target "${BUILD_DIR}" httpx --quiet --disable-pip-version-check
+# boto3 ships in the python3.12 Lambda runtime already. Everything else the
+# unattended run needs has to be vendored, including strands and anthropic:
+# the scheduled pass runs the same agent a person runs locally, so the model's
+# identity reading happens on the schedule too, not just when someone watches.
+# 102MB unpacked, 28MB zipped, against Lambda 250MB and 50MB ceilings. Memory
+# stays at 512MB because this account is capped there, so the pass is slower
+# than it would otherwise be but still finishes well inside the timeout.
+# Built on macOS, run on Amazon Linux. pydantic-core and friends ship compiled
+# extensions, so the local arm64 wheels are useless in Lambda: without the
+# explicit platform pins the function dies on "No module named
+# pydantic_core._pydantic_core" at import time.
+"${REPO_ROOT}/.venv/bin/pip" install --target "${BUILD_DIR}" \
+  --platform manylinux2014_x86_64 --implementation cp --python-version 3.12 \
+  --only-binary=:all: --upgrade \
+  httpx strands-agents anthropic --quiet --disable-pip-version-check
+find "${BUILD_DIR}" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+# dist-info stays: anthropic resolves its own dependency versions through
+# importlib.metadata at import time, so stripping metadata to save a few MB
+# kills the function with PackageNotFoundError instead.
 cp -R "${REPO_ROOT}/agent" "${BUILD_DIR}/agent"
 find "${BUILD_DIR}/agent" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 cp "${REPO_ROOT}/infra/lambda_handler.py" "${BUILD_DIR}/lambda_handler.py"
@@ -136,6 +166,7 @@ cp "${REPO_ROOT}/infra/lambda_handler.py" "${BUILD_DIR}/lambda_handler.py"
 # feed dumps in data/ are not read by anything this Lambda imports).
 mkdir -p "${BUILD_DIR}/data"
 cp "${REPO_ROOT}/data/household.json" "${BUILD_DIR}/data/household.json"
+cp "${REPO_ROOT}/data/cpsc_2026.json" "${BUILD_DIR}/data/cpsc_2026.json"
 ( cd "${BUILD_DIR}" && zip -r -q "${ZIP_PATH}" . -x '*.pyc' )
 echo "package: ${ZIP_PATH} ($(du -h "${ZIP_PATH}" | cut -f1))"
 
@@ -148,8 +179,9 @@ if aws lambda get-function --function-name "${FUNCTION_NAME}" >/dev/null 2>&1; t
     --role "${ROLE_ARN}" \
     --runtime python3.12 \
     --handler lambda_handler.handler \
-    --timeout 120 \
-    --memory-size 512 >/dev/null
+    --timeout 900 \
+    --memory-size 512 \
+    --environment "Variables={${LAMBDA_ENV}}" >/dev/null
   aws lambda wait function-updated --function-name "${FUNCTION_NAME}"
 else
   aws lambda create-function \
@@ -157,8 +189,9 @@ else
     --runtime python3.12 \
     --role "${ROLE_ARN}" \
     --handler lambda_handler.handler \
-    --timeout 120 \
+    --timeout 900 \
     --memory-size 512 \
+    --environment "Variables={${LAMBDA_ENV}}" \
     --zip-file "fileb://${ZIP_PATH}" >/dev/null
   aws lambda wait function-active --function-name "${FUNCTION_NAME}"
 fi

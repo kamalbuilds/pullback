@@ -25,6 +25,7 @@ screen) can read it without a custom parser.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import traceback
 from datetime import date, datetime, timedelta, timezone
@@ -296,6 +297,63 @@ def run_once(household_filter: str | None = None) -> dict:
     return summary
 
 
+def run_agent_pass(household_filter: str | None = None) -> dict:
+    """The scheduled pass, with the model reading identity.
+
+    The deterministic sweep in run_once() can only match on shared words, so on
+    its own it misses the case this product exists for: a receipt that says
+    "LED projecting finger lights party favors 50 pieces" against a notice that
+    says "Finger Light Toys ... 50 pieces in a box". Reading that is the agent's
+    job, and it has to happen on the schedule too, not only when someone is
+    watching. Requires ANTHROPIC_API_KEY in the function environment.
+
+    The recall pool comes from DynamoDB rather than a second fetch: run_once()
+    has already refreshed it this invocation.
+    """
+    from agent.engine.scan import candidates
+    from agent.pullback_agent import DynamoSink, build_agent
+
+    summary = run_once(household_filter=household_filter)
+    if summary.get("errors"):
+        _log("agent_pass_skipped", reason="the feed refresh reported errors")
+        return summary
+
+    recalls = [_recall_from_item(item) for item in RecallStore().all_recalls()]
+    households = _load_households()
+    if household_filter:
+        households = {k: v for k, v in households.items() if k == household_filter}
+
+    agent_summary = {"purchases_read": 0, "verdicts": 0, "dispatched": 0, "vetoed": 0}
+    for household, purchases in households.items():
+        verdict_purchases = [_to_verdict_purchase(p) for p in purchases]
+        agent, ledger, events = build_agent(
+            household, verdict_purchases, recalls, sink=DynamoSink()
+        )
+        for purchase in verdict_purchases:
+            if not candidates(purchase, recalls):
+                continue
+            agent_summary["purchases_read"] += 1
+            try:
+                agent(
+                    f"Check purchase {purchase.purchase_id} and finish it: "
+                    f"{purchase.description!r} bought from {purchase.retailer} "
+                    f"on {purchase.purchased_on} for ${purchase.price}."
+                )
+            except Exception as exc:
+                _log("agent_purchase_error", purchase=purchase.purchase_id, reason=str(exc)[:200])
+        agent_summary["verdicts"] += len(ledger.verdicts)
+        agent_summary["dispatched"] += len(ledger.dispatched)
+        agent_summary["vetoed"] += sum(1 for e in events if e["event"] == "veto")
+
+    summary["agent"] = agent_summary
+    _log("agent_pass_done", **agent_summary)
+    return summary
+
+
+def _agent_enabled() -> bool:
+    return os.environ.get("PULLBACK_RUN_AGENT") == "1" and bool(os.environ.get("ANTHROPIC_API_KEY"))
+
+
 def _is_http_event(event: dict) -> bool:
     return isinstance(event, dict) and "requestContext" in event and "http" in event.get("requestContext", {})
 
@@ -321,7 +379,9 @@ def handler(event: dict, context: Any = None) -> dict:
 
         _log("invoke", mode="http", method=method, household_filter=household_filter)
         try:
-            summary = run_once(household_filter=household_filter)
+            summary = (run_agent_pass if _agent_enabled() else run_once)(
+                household_filter=household_filter
+            )
             return {
                 "statusCode": 200,
                 "headers": {**CORS_HEADERS, "Content-Type": "application/json"},
@@ -335,9 +395,9 @@ def handler(event: dict, context: Any = None) -> dict:
                 "body": json.dumps({"error": str(exc)}),
             }
 
-    _log("invoke", mode="scheduled")
+    _log("invoke", mode="scheduled", reads_identity=_agent_enabled())
     try:
-        return run_once()
+        return run_agent_pass() if _agent_enabled() else run_once()
     except Exception as exc:
         _log("invoke_error", mode="scheduled", reason=str(exc), traceback=traceback.format_exc())
         raise
