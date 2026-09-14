@@ -13,19 +13,24 @@ H=1080
 
 # beat | visual sources, comma separated, split evenly across the beat
 MANIFEST="
-01_feed|casts/01_feed.cast
-02_gap|cards/02_gap.png
-03_pair|casts/03_pair.cast
-04_run|casts/04_run.cast
-05_gate|casts/04_run.cast
-06_console|../console/shots/queue.png,../console/shots/case.png
-07_veto|casts/07_veto.cast
-08_mutation|casts/08_mutation.cast
-09_unattended|casts/09_unattended.cast
-10_breadth|casts/10_breadth.cast
-11_label|../data/labels/luum_upc_label.png,casts/11_label.cast
-12_reply|casts/12_reply.cast
-13_close|cards/13_close.png
+01_nbc|cards/nbc_head.png
+02_room|cards/nbc_photo.png
+03_after|cards/cpsc_after.png
+04_six|cards/senate_six.png
+05_seventy|cards/cr_seventy.png
+06_ours|casts/01_feed.cast
+07_prose|casts/03_pair.cast
+08_gap|../docs/frames/reveal-1.png
+09_read|../docs/frames/reveal-2.png
+10_decide|../docs/frames/reveal-3.png
+11_gate|../docs/frames/reveal-4.png
+12_run|casts/04_run.cast
+13_veto|casts/07_veto.cast
+14_mutation|casts/08_mutation.cast
+15_unattended|casts/09_unattended.cast
+16_breadth|casts/10_breadth.cast
+17_label|../data/labels/luum_upc_label.png,casts/11_label.cast
+18_close|../console/shots/queue.png,cards/13_close.png
 "
 
 render_cast() {
