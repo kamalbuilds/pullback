@@ -96,7 +96,7 @@ export default async function CasePage({ params }: Params) {
               <>
                 <p className="micro mt-3">to {recipient}</p>
                 <pre
-                  className="data mt-4 overflow-x-auto rounded-[4px] p-6"
+                  className="data mt-4 overflow-x-auto rounded-[2px] p-6"
                   style={{
                     background: "var(--sheet-2)",
                     color: "var(--ink)",
@@ -128,7 +128,7 @@ export default async function CasePage({ params }: Params) {
 
           {!open && evidenceSent ? (
             <p
-              className="data mt-8 rounded-[4px] border border-rule p-5"
+              className="data mt-8 rounded-[2px] border border-rule p-5"
               style={{ color: "var(--ink-2)" }}
             >
               Your answer is on the case. The next scheduled run recomputes the verdict with it.
