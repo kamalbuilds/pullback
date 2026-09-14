@@ -158,10 +158,19 @@ def approval_gate(ledger: Ledger, log: Callable[[str, str], None]) -> HumanInThe
 
 
 class CaseSink:
-    """Where cases go when the run ends. Both implementations are real."""
+    """Where cases go when the run ends. Both implementations are real.
+
+    `read` matters as much as `write`. A pass that only writes would overwrite
+    what an earlier pass learned, and the most expensive thing to forget is that
+    a claim has already been sent: the persistent guard against sending twice is
+    the delivery record on the case, not anything held in memory for one run.
+    """
 
     def write(self, case: dict) -> str:
         raise NotImplementedError
+
+    def read(self, household: str, case_id: str) -> dict | None:
+        return None
 
 
 class FileSink(CaseSink):
@@ -174,6 +183,10 @@ class FileSink(CaseSink):
         path.write_text(json.dumps(case, indent=2, default=str))
         return str(path)
 
+    def read(self, household: str, case_id: str) -> dict | None:
+        path = self.root / f"{case_id}.json"
+        return json.loads(path.read_text()) if path.exists() else None
+
 
 class DynamoSink(CaseSink):
     def __init__(self) -> None:
@@ -184,6 +197,9 @@ class DynamoSink(CaseSink):
     def write(self, case: dict) -> str:
         self.store.put_case(case)
         return f"dynamodb://pullback-cases/{case['household']}/{case['case_id']}"
+
+    def read(self, household: str, case_id: str) -> dict | None:
+        return self.store.get_case(household, case_id)
 
 
 SYSTEM_PROMPT = """You work for one household. Your job is to find out whether anything they own has been recalled, and if so, to get the manufacturer's remedy actually delivered.
@@ -379,10 +395,28 @@ def build_agent(
             "created_at": _now(),
             "updated_at": _now(),
         }
+        # A case this household has seen before keeps what the earlier pass
+        # learned. Losing the delivery record would be the expensive one: it is
+        # the only durable proof the claim already went out, so dropping it
+        # would let a later run send the same claim to the same company again.
+        previous = sink.read(household, cid)
+        if previous:
+            case["created_at"] = previous.get("created_at", case["created_at"])
+            case["timeline"] = list(previous.get("timeline", [])) + case["timeline"]
+            for carried in ("delivery", "claim_text", "evidence_uri"):
+                if previous.get(carried):
+                    case[carried] = previous[carried]
+            if previous.get("delivery", {}).get("message_id"):
+                case["status"] = previous.get("status", status)
+                ledger.dispatched.add(cid)
+                log("already_sent", f"{cid} was filed on an earlier pass; not sending again")
+            if previous.get("claim_text"):
+                ledger.claims[cid] = previous["claim_text"]
+
         ledger.cases[cid] = case
         where = sink.write(case)
-        log("case_opened", f"{cid} {status} -> {where}")
-        return f"Case {cid} open with status {status}."
+        log("case_opened", f"{cid} {case['status']} -> {where}")
+        return f"Case {cid} open with status {case['status']}."
 
     @tool
     def write_claim(case_id_arg: str, claim_text: str) -> str:
