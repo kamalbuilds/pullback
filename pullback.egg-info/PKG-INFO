@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: pullback
+Version: 0.1.0
+Summary: An agent that finds out whether something in your home has been recalled, then gets the remedy delivered.
+Requires-Python: >=3.11
+License-File: LICENSE
+Requires-Dist: strands-agents>=1.55
+Requires-Dist: strands-agents-tools
+Requires-Dist: anthropic>=0.40
+Requires-Dist: boto3>=1.35
+Requires-Dist: httpx>=0.27
+Requires-Dist: python-dotenv>=1.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Dynamic: license-file
