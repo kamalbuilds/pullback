@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Pullback",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1280,
+      670
+    ],
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "components": [
+    {
+      "id": "src",
+      "type": "external",
+      "label": "Public recall feeds",
+      "sublabel": "CPSC, NHTSA, openFDA",
+      "pos": [
+        40,
+        60
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "434 CPSC notices in 2026"
+    },
+    {
+      "id": "extract",
+      "type": "backend",
+      "label": "Constraint extractor",
+      "sublabel": "prose to checkable facts",
+      "pos": [
+        370,
+        60
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "94% state a sold window"
+    },
+    {
+      "id": "person",
+      "type": "external",
+      "label": "The household",
+      "sublabel": "owns the recalled thing",
+      "pos": [
+        1030,
+        60
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "never told"
+    }
+  ],
+  "connections": [
+    {
+      "id": "fetch",
+      "from": "src",
+      "to": "extract",
+      "label": "notices, as prose",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "silence",
+      "from": "extract",
+      "to": "person",
+      "label": "checkable facts, nobody compares them",
+      "variant": "dashed"
+    }
+  ]
+}

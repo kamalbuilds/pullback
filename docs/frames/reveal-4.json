@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Pullback",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1280,
+      670
+    ],
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "components": [
+    {
+      "id": "src",
+      "type": "external",
+      "label": "Public recall feeds",
+      "sublabel": "CPSC, NHTSA, openFDA",
+      "pos": [
+        40,
+        60
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "434 CPSC notices in 2026"
+    },
+    {
+      "id": "extract",
+      "type": "backend",
+      "label": "Constraint extractor",
+      "sublabel": "prose to checkable facts",
+      "pos": [
+        370,
+        60
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "94% state a sold window"
+    },
+    {
+      "id": "engine",
+      "type": "backend",
+      "label": "Verdict engine",
+      "sublabel": "MATCH, NEEDS_EVIDENCE, NO_MATCH",
+      "pos": [
+        700,
+        60
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "no prompt reaches it"
+    },
+    {
+      "id": "person",
+      "type": "external",
+      "label": "The household",
+      "sublabel": "owns the recalled thing",
+      "pos": [
+        1030,
+        60
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "never told"
+    },
+    {
+      "id": "ledger",
+      "type": "database",
+      "label": "DynamoDB pullback-cases",
+      "sublabel": "the case, and its decision",
+      "pos": [
+        40,
+        290
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "a rerun files nothing twice"
+    },
+    {
+      "id": "model",
+      "type": "backend",
+      "label": "Strands agent",
+      "sublabel": "reads identity, drafts the claim",
+      "pos": [
+        700,
+        290
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "decides nothing"
+    },
+    {
+      "id": "gate",
+      "type": "security",
+      "label": "Approval gate",
+      "sublabel": "Strands HumanInTheLoop",
+      "pos": [
+        1030,
+        290
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "allowed_tools: !dispatch_remedy"
+    },
+    {
+      "id": "evidence",
+      "type": "cloud",
+      "label": "S3 evidence pack",
+      "sublabel": "case, decision, claim",
+      "pos": [
+        370,
+        520
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "auditable months later"
+    },
+    {
+      "id": "veto",
+      "type": "security",
+      "label": "RemedyVeto hook",
+      "sublabel": "BeforeToolCallEvent",
+      "pos": [
+        700,
+        520
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "cancels dispatch_remedy"
+    },
+    {
+      "id": "terminus",
+      "type": "external",
+      "label": "Manufacturer",
+      "sublabel": "the remedy contact on the notice",
+      "pos": [
+        1030,
+        520
+      ],
+      "size": [
+        200,
+        96
+      ],
+      "tag": "irreversible"
+    }
+  ],
+  "connections": [
+    {
+      "id": "fetch",
+      "from": "src",
+      "to": "extract",
+      "label": "notices, as prose",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "constraints",
+      "from": "extract",
+      "to": "engine",
+      "label": "checkable facts",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "owned",
+      "from": "person",
+      "to": "engine",
+      "label": "what they bought",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "identity",
+      "from": "model",
+      "to": "engine",
+      "label": "identity read, nothing else",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "emphasis"
+    },
+    {
+      "id": "attempt",
+      "from": "model",
+      "to": "veto",
+      "label": "dispatch_remedy",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 87
+    },
+    {
+      "id": "ruling",
+      "from": "veto",
+      "to": "gate",
+      "label": "only with a MATCH on file",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "security"
+    },
+    {
+      "id": "approval",
+      "from": "person",
+      "to": "gate",
+      "label": "the one approval",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 87
+    },
+    {
+      "id": "filed",
+      "from": "gate",
+      "to": "terminus",
+      "label": "claim filed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 87,
+      "variant": "emphasis"
+    },
+    {
+      "id": "cases",
+      "from": "model",
+      "to": "ledger",
+      "label": "one case per recall",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "pack",
+      "from": "model",
+      "to": "evidence",
+      "label": "evidence pack",
+      "fromSide": "bottom",
+      "toSide": "right",
+      "variant": "dashed"
+    }
+  ]
+}
