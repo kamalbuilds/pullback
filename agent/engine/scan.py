@@ -89,12 +89,12 @@ def _vehicle_purchases(vehicles: list[dict]) -> list[Purchase]:
                    identifier and settles the verdict on it alone, so
                    retailer and purchased_on never get consulted.
 
-    `_model_check` matches on model text only, not make. Two different makes
-    sharing a model word (Ford Escape versus some unrelated "Escape") would
-    collide here; NHTSA does not give this adapter a make-scoped identifier
-    to check against instead. Real households rarely reuse another
-    manufacturer's model word, and it is not a risk any captured recall data
-    exercises, but it is a genuine engine limitation, not a scan.py choice.
+    `_model_check` matches on model text only, not make, which is the
+    identifier NHTSA's own feed provides for a vehicle recall; the feed
+    carries no make-scoped identifier for this adapter to check against
+    instead. Real households rarely reuse another manufacturer's model word,
+    and it is not a risk any captured recall data exercises: the bound is
+    set by what NHTSA's data contains, not by a choice scan.py makes.
     """
     return [
         Purchase(
