@@ -1,3 +1,5 @@
+import { plural } from "./format";
+
 export type CaseStatus =
   | "needs_evidence"
   | "awaiting_approval"
@@ -109,27 +111,63 @@ export function queue(cases: Case[]): Case[] {
   return cases.filter(needsHuman).sort((a, b) => urgency(b) - urgency(a));
 }
 
+/**
+ * A run record shares the partition key with the cases but is not one. The agent writes one
+ * per screening pass under a `run#<iso>` sort key, and it is the only honest source for how
+ * much work a pass did. Counting cases in the table measures what is left over, not what ran.
+ */
+export interface Run {
+  case_id: string;
+  record_type: "run";
+  status: "run_summary";
+  purchases_screened: number;
+  recalls_screened: number;
+  pairs_considered: number;
+  cases_opened: number;
+  dispatched: number;
+  vetoed: number;
+  sources: string[];
+  finished_at: string;
+  timeline: TimelineEntry[];
+}
+
+export const RUN_PREFIX = "run#";
+
+export function isRun(raw: { case_id?: string; record_type?: string }): boolean {
+  return raw.record_type === "run" || (raw.case_id ?? "").startsWith(RUN_PREFIX);
+}
+
+/** ISO timestamps sort lexicographically, so the last run# key is the newest run. */
+export function latestRun(runs: Run[]): Run | null {
+  if (!runs.length) return null;
+  return [...runs].sort((a, b) => a.case_id.localeCompare(b.case_id))[runs.length - 1];
+}
+
 export interface Watch {
   purchases: number;
   corpus: number | null;
-  screenings: number;
+  sources: string[];
+  opened: number | null;
+  dispatched: number | null;
+  vetoed: number | null;
   closedAlone: number;
   handled: number;
   lastRun: string | null;
   since: string | null;
+  /** True when the figures above came from a run record rather than from leftover rows. */
+  fromRun: boolean;
 }
 
 const CORPUS_RE = /CPSC published (\d[\d,]*) notices/;
 
 /**
- * Everything the empty state says about the agent is counted here, from the rows themselves.
- * The corpus size is quoted back out of the screening events the agent wrote, so the number
- * on screen is the number the agent actually screened against.
+ * The run record is the source of truth for throughput. Everything falls back to counting
+ * rows only when no run has been written yet, because a fallback that prints zero would be a
+ * lie in the other direction.
  */
-export function watch(cases: Case[]): Watch {
+export function watch(cases: Case[], run: Run | null = null): Watch {
   const purchases = new Set(cases.map((c) => c.purchase?.purchase_id).filter(Boolean));
   let corpus: number | null = null;
-  let screenings = 0;
   let lastRun: string | null = null;
   let since: string | null = null;
 
@@ -137,7 +175,6 @@ export function watch(cases: Case[]): Watch {
     for (const e of c.timeline ?? []) {
       if (!lastRun || e.at > lastRun) lastRun = e.at;
       if (!since || e.at < since) since = e.at;
-      if (e.event === "purchase.screened") screenings += 1;
       const m = CORPUS_RE.exec(e.detail ?? "");
       if (m) {
         const n = Number(m[1].replace(/,/g, ""));
@@ -148,14 +185,46 @@ export function watch(cases: Case[]): Watch {
 
   const closed = cases.filter((c) => c.status === "dismissed" || c.status === "resolved");
   return {
-    purchases: purchases.size,
-    corpus,
-    screenings,
+    purchases: run ? run.purchases_screened : purchases.size,
+    corpus: run ? run.recalls_screened : corpus,
+    sources: run?.sources?.length ? run.sources : [],
+    opened: run ? run.cases_opened : null,
+    dispatched: run ? run.dispatched : null,
+    vetoed: run ? run.vetoed : null,
     closedAlone: closed.filter((c) => !touchedByHuman(c)).length,
     handled: cases.filter((c) => !needsHuman(c)).length,
-    lastRun,
+    lastRun: run?.finished_at ?? lastRun,
     since,
+    fromRun: Boolean(run),
   };
+}
+
+/** "CPSC", "CPSC and NHTSA", "CPSC, NHTSA and openFDA". */
+export function sourceList(sources: string[]): string {
+  if (!sources.length) return "";
+  if (sources.length === 1) return sources[0];
+  return `${sources.slice(0, -1).join(", ")} and ${sources[sources.length - 1]}`;
+}
+
+/**
+ * The one sentence that says how much work the agent did. It is quoted from the run record so
+ * the throughput is what ran, not what happens to be left in the table. Counting leftover rows
+ * understates every pass that closed cases, and a number on screen has to be true.
+ */
+export function throughputSentence(w: Watch): string {
+  if (!w.fromRun || w.corpus === null) {
+    return `Pullback is watching ${plural(w.purchases, "purchase")} in this household and has closed ${plural(w.handled, "case")} without asking. No run summary has been written yet, so these are counted from the cases themselves.`;
+  }
+  const feeds = sourceList(w.sources);
+  const against = `against ${w.corpus.toLocaleString("en-US")} ${feeds ? `${feeds} ` : ""}recall ${w.corpus === 1 ? "notice" : "notices"}`;
+  const did: string[] = [];
+  if (w.opened !== null) did.push(`opened ${plural(w.opened, "case")}`);
+  if (w.vetoed) did.push(`vetoed ${w.vetoed}`);
+  if (w.dispatched !== null) did.push(`dispatched ${plural(w.dispatched, "claim")}`);
+  const tail = did.length
+    ? `, ${did.length === 1 ? did[0] : `${did.slice(0, -1).join(", ")} and ${did[did.length - 1]}`}`
+    : "";
+  return `The last run screened ${plural(w.purchases, "purchase")} in this household ${against}${tail}.`;
 }
 
 export const STATUS_MARK: Record<CaseStatus, { word: string; tone: string }> = {

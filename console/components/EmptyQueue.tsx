@@ -2,17 +2,16 @@ import Link from "next/link";
 
 import { RunAgent } from "@/components/RunAgent";
 import type { Case, Watch } from "@/lib/cases";
-import { touchedByHuman } from "@/lib/cases";
+import { throughputSentence, touchedByHuman } from "@/lib/cases";
 import { ago, longDate, plural, stampUTC } from "@/lib/format";
 
-function screenedSentence(w: Watch): string {
-  const head = `Pullback screened ${plural(w.purchases, "purchase")} in this household`;
-  return w.corpus
-    ? `${head} against ${w.corpus.toLocaleString("en-US")} recall notices published by the CPSC in 2026.`
-    : `${head} against every recall notice it has ingested.`;
-}
+/**
+ * What the run sentence does not already say. When the run record reports the dispatch count,
+ * repeating it here as "still with the manufacturer" is the same number said twice.
+ */
+function outcomeSentence(cases: Case[], watch: Watch): string {
+  if (!cases.length) return "Nothing in this household has matched a notice yet.";
 
-function outcomeSentence(cases: Case[]): string {
   const closedAlone = cases.filter(
     (c) => (c.status === "dismissed" || c.status === "resolved") && !touchedByHuman(c),
   ).length;
@@ -22,9 +21,12 @@ function outcomeSentence(cases: Case[]): string {
   const parts: string[] = [];
   if (closedAlone) parts.push(`${plural(closedAlone, "case")} closed without you`);
   if (resolved) parts.push(`${plural(resolved, "remedy", "remedies")} completed`);
-  if (dispatched) parts.push(`${plural(dispatched, "claim")} still with the manufacturer`);
-  if (!parts.length) return "No purchase in this household has matched a notice yet.";
-  const sentence = parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+  if (dispatched && watch.dispatched === null) {
+    parts.push(`${plural(dispatched, "claim")} still with the manufacturer`);
+  }
+  if (!parts.length) return "";
+  const sentence =
+    parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
   return `${sentence.charAt(0).toUpperCase()}${sentence.slice(1)}.`;
 }
 
@@ -46,14 +48,12 @@ export function EmptyQueue({
     <section className="report-in pt-20">
       <h1 className="statement max-w-[18ch]">Nothing needs you.</h1>
 
-      <p className="prose-16 mt-7 max-w-[58ch]" style={{ color: "var(--ink-2)" }}>
-        {screenedSentence(watch)} {outcomeSentence(cases)}
+      <p className="prose-16 mt-7 max-w-[60ch]" style={{ color: "var(--ink-2)" }}>
+        {`${throughputSentence(watch)} ${outcomeSentence(cases, watch)}`.trim()}
       </p>
 
       {watch.lastRun ? (
-        <p className="micro mt-6">
-          last run {ago(watch.lastRun)}, {stampUTC(watch.lastRun)}
-        </p>
+        <p className="micro mt-6">{`last run ${ago(watch.lastRun)}, ${stampUTC(watch.lastRun)}`}</p>
       ) : null}
 
       {closed.length ? (
