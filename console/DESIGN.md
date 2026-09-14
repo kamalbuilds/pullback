@@ -30,8 +30,8 @@ and Instrument Serif are banned. There is no sans in this system.
 | Token | Size / line | Family | Used for |
 |---|---|---|---|
 | `--t-statement` | clamp(30px, 2.2vw + 18px, 42px) / 1.1 | Newsreader 400 | empty-state report, case headline |
-| `--t-record` | 25px / 1.2 | Newsreader 400 | one queue record's subject |
-| `--t-hazard` | 18px / 1.45 | Newsreader 400 | the hazard sentence |
+| `--t-record` | clamp(21px, 0.8vw + 17px, 25px) / 1.22 | Newsreader 400 | one queue record's subject |
+| `--t-hazard` | clamp(16px, 0.4vw + 14.5px, 18px) / 1.45 | Newsreader 400 | the hazard sentence |
 | `--t-prose` | 16px / 1.6 | Newsreader 400 | body, secondary statements |
 | `--t-data` | 13px / 1.55 | Plex Mono 400 | check details, timeline detail, claim text |
 | `--t-label` | 10.5px / 1 | Plex Mono 500, `0.11em` tracking, uppercase | section labels, field names |
@@ -71,20 +71,23 @@ Container is a single reading column, `max-width: 1080px`, `padding-inline: 24px
 Vertical rhythm between queue records is a 1px `--rule`, not a gap. Records are sheets of one
 document, not floating cards.
 
-Radius is `4px` everywhere. Status marks are `2px`. Nothing is a pill, nothing is a circle.
+Radius is `4px` everywhere, with no second radius anywhere in the system. Nothing is a pill,
+nothing is a circle.
 Elevation is expressed with a hairline border and a background shift, never a drop shadow.
 
 ## Components and their states
 
 ### Record (a queue row)
 
-Anatomy, top to bottom, in the order a person needs it:
-status mark and age, the subject in serif, the hazard in `--alarm`, the agent's decision line
-in mono, and exactly one action.
+Two columns at `lg`: a reading column and a 178px right rail. The rail carries the status
+mark, the age, the notice number and the notice date, right aligned, so the page has a spine
+and the rules run the full width. The reading column carries, in the order a person needs it:
+the subject in serif, what it cost and where it came from in mono, the hazard in `--alarm`,
+the agent's decision line in mono, and exactly one action. Below `lg` the rail stacks on top.
 
 | State | Treatment |
 |---|---|
-| rest | `--sheet`, 1px `--rule` bottom, `padding: 32px 0` |
+| rest | 1px `--rule` bottom, `padding: 26px 0 28px`, rules aligned to the content column |
 | hover | background `--sheet-2`, action underline appears |
 | focus-visible | 2px `--seal` outline, 2px offset, on the whole record link |
 | pressed | `translateY(1px)` |
@@ -92,8 +95,9 @@ in mono, and exactly one action.
 
 ### Status mark
 
-A 2px square in the state colour plus a mono uppercase word. No coloured dots, no pills.
-`needs you` = `--pending`, `sent` = `--ink-2`, `closed` = `--seal`, `no match` = `--ink-3`.
+One mono uppercase word in the state colour, and nothing else. No coloured dot, no square, no
+pill, no badge. `needs you` = `--pending`, `claim sent` = `--ink-2`, `closed` = `--seal`,
+`no match` = `--ink-3`.
 
 ### Check row (the audit trail)
 
@@ -121,8 +125,9 @@ Contrast of every text-on-background pair here clears WCAG AA.
 
 Not a component, the point of the product. A single serif statement, then a mono report of
 what ran while the person was away, then the case count that closed without them. Every number
-in it is read from the cases table, never a constant. The button under it triggers a real agent
-run, and is disabled with a stated reason when `PULLBACK_AGENT_URL` is unset.
+in it is read from the cases table, never a constant. The button under it invokes the screening
+Lambda asynchronously and says a run started, never that one finished, because an async invoke
+cannot know. It is disabled with a stated reason when `PULLBACK_AGENT_FUNCTION` is unset.
 
 ## Motion
 

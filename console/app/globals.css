@@ -121,7 +121,7 @@
   }
 
   .record-title {
-    font-size: 25px;
+    font-size: clamp(21px, 0.8vw + 17px, 25px);
     line-height: 1.22;
     font-weight: 400;
     letter-spacing: -0.008em;
@@ -129,7 +129,7 @@
   }
 
   .hazard {
-    font-size: 18px;
+    font-size: clamp(16px, 0.4vw + 14.5px, 18px);
     line-height: 1.45;
     color: var(--alarm);
   }
@@ -215,9 +215,7 @@
   .record {
     display: block;
     border-bottom: 1px solid var(--rule);
-    padding: 32px 20px 32px 20px;
-    margin-inline: -20px;
-    border-radius: 4px;
+    padding: 26px 0 28px;
     transition: background-color 120ms ease-out;
   }
 

@@ -15,28 +15,35 @@ import type { Case, TimelineEntry } from "./cases";
 
 export const TABLE = process.env.PULLBACK_TABLE ?? "pullback-cases";
 export const HOUSEHOLD = process.env.PULLBACK_HOUSEHOLD ?? "kamal";
-export const REGION = process.env.AWS_REGION ?? "us-east-1";
+export const REGION = process.env.PULLBACK_AWS_REGION ?? process.env.AWS_REGION ?? "us-east-1";
 
 export type Source = "dynamodb" | "local-capture";
 
 /**
- * Credentials come from the Vercel environment in production and from a named profile on a
- * developer machine. When neither is present the console reads the capture taken from the
- * same table with `aws dynamodb scan`, so local work still renders real rows.
+ * Vercel reserves every AWS_ prefixed name for its own Lambda runtime, and that runtime's
+ * role has no access to this table. So the console carries its own least privilege key under
+ * a PULLBACK_ prefix, and only falls back to the ambient chain when a developer has a profile
+ * exported. With neither, it reads the capture taken from the same table with
+ * `aws dynamodb scan`, so local work still renders real rows.
  */
+export function explicitCredentials():
+  | { accessKeyId: string; secretAccessKey: string }
+  | undefined {
+  const accessKeyId = process.env.PULLBACK_AWS_ACCESS_KEY_ID?.trim();
+  const secretAccessKey = process.env.PULLBACK_AWS_SECRET_ACCESS_KEY?.trim();
+  return accessKeyId && secretAccessKey ? { accessKeyId, secretAccessKey } : undefined;
+}
+
 function hasCredentials(): boolean {
-  return Boolean(
-    process.env.AWS_ACCESS_KEY_ID ||
-      process.env.AWS_PROFILE ||
-      process.env.AWS_CONTAINER_CREDENTIALS_RELATIVE_URI ||
-      process.env.AWS_WEB_IDENTITY_TOKEN_FILE,
-  );
+  return Boolean(explicitCredentials() || process.env.AWS_PROFILE);
 }
 
 let client: DynamoDBClient | null = null;
 
 function db(): DynamoDBClient {
-  if (!client) client = new DynamoDBClient({ region: REGION });
+  if (!client) {
+    client = new DynamoDBClient({ region: REGION, credentials: explicitCredentials() });
+  }
   return client;
 }
 
@@ -66,9 +73,15 @@ function coerce(raw: Record<string, unknown>): Case {
 
 async function fromCapture(): Promise<Case[]> {
   const file = path.join(process.cwd(), ".local", "scan.json");
-  const parsed = JSON.parse(await readFile(file, "utf8")) as {
-    Items: Record<string, AttributeValue>[];
-  };
+  let raw: string;
+  try {
+    raw = await readFile(file, "utf8");
+  } catch {
+    throw new Error(
+      "No AWS credentials are set and there is no local capture at .local/scan.json, so there is nothing true to render. Set PULLBACK_AWS_ACCESS_KEY_ID and PULLBACK_AWS_SECRET_ACCESS_KEY.",
+    );
+  }
+  const parsed = JSON.parse(raw) as { Items: Record<string, AttributeValue>[] };
   return parsed.Items.map((item) => coerce(unmarshall(item))).filter(
     (c) => c.household === HOUSEHOLD,
   );
@@ -152,7 +165,38 @@ export async function applyMutation(
   );
 }
 
-export function agentUrl(): string | null {
-  const url = process.env.PULLBACK_AGENT_URL?.trim();
-  return url ? url : null;
+/**
+ * The agent runs as a Lambda. Its Function URL is dead on this account (403 even with a
+ * correct resource policy and a SigV4-signed request, because the account sits in a
+ * restricted concurrency tier), so the console invokes the function by name with the same
+ * server-side credentials it reads DynamoDB with. Nothing about the agent is reachable from
+ * the browser.
+ */
+export function agentFunction(): string | null {
+  const name = process.env.PULLBACK_AGENT_FUNCTION?.trim();
+  if (!name || !hasCredentials()) return null;
+  return name;
+}
+
+/**
+ * A full screening pass takes 30 to 90 seconds, which outlives a serverless request, so the
+ * invoke is asynchronous. A 202 means the run started. It never means the run finished, and
+ * the console must not say otherwise.
+ */
+export async function startAgentRun(payload: Record<string, unknown>): Promise<number> {
+  const name = agentFunction();
+  if (!name) throw new Error("No agent function is configured on this deployment.");
+  const { InvokeCommand, LambdaClient } = await import("@aws-sdk/client-lambda");
+  const lambda = new LambdaClient({ region: REGION, credentials: explicitCredentials() });
+  const out = await lambda.send(
+    new InvokeCommand({
+      FunctionName: name,
+      InvocationType: "Event",
+      Payload: Buffer.from(JSON.stringify({ household: HOUSEHOLD, ...payload })),
+    }),
+  );
+  if (out.StatusCode !== 202) {
+    throw new Error(`Lambda ${name} answered ${out.StatusCode} instead of accepting the run.`);
+  }
+  return out.StatusCode;
 }

@@ -80,7 +80,7 @@ export default async function ActivityPage() {
             </div>
             <ol>
               {entries.map((row, index) => (
-                <li key={`${row.caseId}-${row.at}-${index}`} className="border-b border-rule py-3.5">
+                <li key={`${row.caseId}-${row.at}-${index}`} className="border-b border-rule py-3">
                   <div className="grid grid-cols-1 gap-1.5 lg:grid-cols-[58px_182px_1fr_196px] lg:items-baseline lg:gap-5">
                     <span className="micro">{clockUTC(row.at)}</span>
                     <span
@@ -94,8 +94,9 @@ export default async function ActivityPage() {
                     </span>
                     <Link
                       href={`/case/${row.caseId}`}
-                      className="micro lg:text-right"
+                      className="micro lg:overflow-hidden lg:text-ellipsis lg:whitespace-nowrap lg:text-right"
                       style={{ color: "var(--ink-3)" }}
+                      title={row.subject}
                     >
                       {row.subject}
                     </Link>
