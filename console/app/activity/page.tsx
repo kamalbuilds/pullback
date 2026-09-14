@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Provenance } from "@/components/Provenance";
-import type { Case } from "@/lib/cases";
+import type { Case, Run } from "@/lib/cases";
+import { sourceList } from "@/lib/cases";
 import { longDate, clockUTC, dayKey, plural } from "@/lib/format";
 import { listCases } from "@/lib/store";
 
@@ -15,37 +16,62 @@ export const metadata: Metadata = {
 const HUMAN_EVENTS = new Set(["approval.granted", "approval.declined", "evidence.provided"]);
 
 interface Row {
+  kind: "case" | "run";
   at: string;
   event: string;
   detail: string;
   caseId: string;
   subject: string;
-  outcome: Case["verdict"]["outcome"];
 }
 
-function feed(cases: Case[]): Row[] {
+/** One line of English for a whole screening pass, built from the run record's own counts. */
+function runDetail(run: Run): string {
+  const feeds = sourceList(run.sources ?? []);
+  const parts = [
+    `Screened ${plural(run.purchases_screened, "purchase")} against ${run.recalls_screened.toLocaleString("en-US")} ${feeds ? `${feeds} ` : ""}notices`,
+    `${plural(run.pairs_considered, "pair")} considered`,
+    `${plural(run.cases_opened, "case")} opened`,
+    `${plural(run.dispatched, "claim")} dispatched`,
+    `${run.vetoed} vetoed`,
+  ];
+  return `${parts[0]}. ${parts.slice(1).join(", ")}.`;
+}
+
+function feed(cases: Case[], runs: Run[]): Row[] {
   const rows: Row[] = [];
   for (const c of cases) {
     for (const e of c.timeline ?? []) {
       rows.push({
+        kind: "case",
         at: e.at,
         event: e.event,
         detail: e.detail,
         caseId: c.case_id,
         subject: c.purchase.description,
-        outcome: c.verdict.outcome,
       });
     }
+  }
+  for (const run of runs) {
+    rows.push({
+      kind: "run",
+      at: run.finished_at ?? run.case_id.slice("run#".length),
+      event: "run.finished",
+      detail: runDetail(run),
+      caseId: run.case_id,
+      subject: "agent run",
+    });
   }
   return rows.sort((a, b) => b.at.localeCompare(a.at));
 }
 
 export default async function ActivityPage() {
-  const { cases, source } = await listCases();
-  const rows = feed(cases);
+  const { cases, runs, source } = await listCases();
+  const rows = feed(cases, runs);
   const human = rows.filter((r) => HUMAN_EVENTS.has(r.event)).length;
   const silent = cases.filter(
-    (c) => c.verdict.outcome === "NO_MATCH" && !(c.timeline ?? []).some((e) => HUMAN_EVENTS.has(e.event)),
+    (c) =>
+      c.verdict.outcome === "NO_MATCH" &&
+      !(c.timeline ?? []).some((e) => HUMAN_EVENTS.has(e.event)),
   ).length;
 
   const days = new Map<string, Row[]>();
@@ -63,9 +89,11 @@ export default async function ActivityPage() {
           {rows.length} {rows.length === 1 ? "entry" : "entries"}. You were needed for {human}.
         </h1>
         <p className="prose-16 mt-6 max-w-[60ch]" style={{ color: "var(--ink-2)" }}>
-          Every screening, verdict, claim and follow up Pullback has written for this household,
-          newest first. {plural(silent, "case")} reached NO_MATCH and closed without ever appearing
-          in the queue.
+          Every screening pass, verdict, claim and follow up Pullback has written for this
+          household, newest first.{" "}
+          {silent
+            ? `${plural(silent, "case")} reached NO_MATCH and closed without ever appearing in the queue.`
+            : "Runs that match nothing close silently and never appear in the queue."}
         </p>
       </section>
 
@@ -80,26 +108,45 @@ export default async function ActivityPage() {
             </div>
             <ol>
               {entries.map((row, index) => (
-                <li key={`${row.caseId}-${row.at}-${index}`} className="border-b border-rule py-3">
+                <li
+                  key={`${row.caseId}-${row.at}-${index}`}
+                  className="border-b border-rule py-3"
+                  style={
+                    row.kind === "run"
+                      ? { borderLeft: "2px solid var(--seal)", paddingLeft: "14px" }
+                      : undefined
+                  }
+                >
                   <div className="grid grid-cols-1 gap-1.5 lg:grid-cols-[58px_182px_1fr_196px] lg:items-baseline lg:gap-5">
                     <span className="micro">{clockUTC(row.at)}</span>
                     <span
                       className="data"
-                      style={{ color: HUMAN_EVENTS.has(row.event) ? "var(--pending)" : "var(--ink)" }}
+                      style={{
+                        color:
+                          row.kind === "run"
+                            ? "var(--seal)"
+                            : HUMAN_EVENTS.has(row.event)
+                              ? "var(--pending)"
+                              : "var(--ink)",
+                      }}
                     >
                       {row.event}
                     </span>
                     <span className="data" style={{ color: "var(--ink-2)" }}>
                       {row.detail}
                     </span>
-                    <Link
-                      href={`/case/${row.caseId}`}
-                      className="micro lg:overflow-hidden lg:text-ellipsis lg:whitespace-nowrap lg:text-right"
-                      style={{ color: "var(--ink-3)" }}
-                      title={row.subject}
-                    >
-                      {row.subject}
-                    </Link>
+                    {row.kind === "run" ? (
+                      <span className="label lg:text-right">agent run</span>
+                    ) : (
+                      <Link
+                        href={`/case/${row.caseId}`}
+                        className="micro lg:overflow-hidden lg:text-ellipsis lg:whitespace-nowrap lg:text-right"
+                        style={{ color: "var(--ink-3)" }}
+                        title={row.subject}
+                      >
+                        {row.subject}
+                      </Link>
+                    )}
                   </div>
                 </li>
               ))}
@@ -108,7 +155,7 @@ export default async function ActivityPage() {
         ))}
       </section>
 
-      <Provenance source={source} count={cases.length} />
+      <Provenance source={source} count={cases.length} runs={runs.length} />
     </>
   );
 }

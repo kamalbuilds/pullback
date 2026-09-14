@@ -197,6 +197,14 @@ def test_a_perfect_match_is_still_not_sent_without_a_person():
 
 
 def test_the_same_case_goes_out_once_the_household_approves():
+    """The gate opens, and nothing is sent twice.
+
+    The case arrives already carrying a delivery record, which is the state of
+    a claim that has been sent once. `send_claim` short-circuits on that before
+    it builds an AWS client, so this exercises the gate and the idempotency
+    guard together without a credential or a network call. The live send itself
+    is covered in tests/test_dispatch.py under the `live` marker.
+    """
     from agent.pullback_agent import build_agent
 
     cid = case_id("kamal", OWNED.purchase_id, HABA.recall_number)
@@ -209,6 +217,13 @@ def test_the_same_case_goes_out_once_the_household_approves():
         "household": "kamal",
         "case_id": cid,
         "status": "awaiting_approval",
+        "claim_text": "claim citing 26719",
+        "delivery": {
+            "mode": "simulated",
+            "to": "success@simulator.amazonses.com",
+            "intended": "recall@habausa.com",
+            "message_id": "already-sent-once",
+        },
         "recall": {"recall_number": "26719", "contact_email": "recall@habausa.com"},
         "timeline": [],
     }

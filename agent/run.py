@@ -54,6 +54,44 @@ def load_recalls(*, since: date, live: bool) -> list[Recall]:
     return recalls
 
 
+def widen(purchase, recalls: list[Recall], found: list) -> list:
+    """Add semantically similar notices to whatever the lexical filter found.
+
+    Optional on purpose. Semantic retrieval costs torch and a 130MB model
+    download, and the README promises a clean clone runs the suite with no
+    network and no credentials. So it is an extra, `pip install -e
+    '.[retrieval]'`, and when it is absent the pass behaves as it did before
+    rather than failing.
+
+    It only ever widens. Nothing it adds can approve a claim: every added
+    candidate still has to clear the same arithmetic, and measured across this
+    household 39 of the 40 notices it adds are rejected there. The one it
+    recovers is a false negative the lexical filter could never catch, because
+    that receipt and that notice share almost no words.
+    """
+    try:
+        from agent.engine.retrieval import semantic_candidates
+    except ImportError:
+        return found
+
+    seen = {c.recall.recall_number for c in found}
+    extra = [
+        c for c in semantic_candidates(purchase, recalls) if c.recall.recall_number not in seen
+    ]
+    if extra:
+        print(
+            json.dumps(
+                {
+                    "event": "widened",
+                    "purchase": purchase.purchase_id,
+                    "added": [c.recall.recall_number for c in extra],
+                }
+            ),
+            flush=True,
+        )
+    return found + extra
+
+
 def load_vehicle_recalls(vehicles: list[dict]) -> list[Recall]:
     recalls: list[Recall] = []
     for vehicle in vehicles:

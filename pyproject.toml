@@ -14,6 +14,10 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+# Semantic candidate retrieval. Optional because it pulls torch and downloads a
+# 130MB embedding model, and a judge cloning this repo should get a working
+# suite without either. Without it the pass uses lexical candidates only.
+retrieval = ["sentence-transformers>=3.0", "torch>=2.4", "numpy>=1.26"]
 
 [build-system]
 requires = ["setuptools>=68"]

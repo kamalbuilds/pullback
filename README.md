@@ -72,7 +72,7 @@ the household does not own:
 FAILED tests/test_veto.py::test_the_hook_cancels_a_dispatch_that_is_actually_attempted
 1 failed, 6 passed
 --- restored:
-459 passed
+829 passed
 ```
 
 ## A real run
@@ -80,16 +80,26 @@ FAILED tests/test_veto.py::test_the_hook_cancels_a_dispatch_that_is_actually_att
 15 purchases in a household, checked against all 434 live notices:
 
 ```
-{"event": "run_started", "purchases": 15, "recalls": 434, "source": "live CPSC feed"}
+{"event": "run_started", "purchases": 16, "recalls": 739, "source": "live regulator feeds"}
 {"event": "verdict",  "detail": "amz-2026-0412 vs 26719: MATCH (4 checks passed, 0 failed)"}
 {"event": "case_opened", "detail": "43f87bbe8aaf308d awaiting_approval"}
 {"event": "claim_written", "detail": "43f87bbe8aaf308d cites 26719"}
-{"event": "dispatched", "detail": "43f87bbe8aaf308d -> recall@habausa.com"}
+{"event": "approved", "detail": "43f87bbe8aaf308d was approved by the household"}
+{"event": "dispatched", "detail": "43f87bbe8aaf308d -> success@simulator.amazonses.com [simulated]"}
 ```
 
-`recall@habausa.com` is not a fixture. It is the address printed on
-[recall 26719](https://www.cpsc.gov/Recalls), the HABA Rainbow Rattle, whose
-glued knot can come untied and release small parts to a child.
+The intended recipient, `recall@habausa.com`, is not a fixture. It is the
+address printed on recall 26719, the HABA Rainbow Rattle, whose glued knot can
+come untied and release small parts to a child. The send itself is real, with a
+real SES message id; where it landed is the sandbox story above, and the case
+says so rather than pretending otherwise.
+
+Note the line the agent cannot skip: nothing is sent until the household
+approves it. `approval_gate` is a Strands `HumanInTheLoop` intervention with
+`allowed_tools=["*", "!dispatch_remedy"]`, so sending is the one call that can
+never be trusted away, and the veto still runs underneath it. A household saying
+send it is permission to file a claim that already passed every check, never
+permission to skip the checking.
 
 The decision behind that claim, rendered so a person can audit it:
 
@@ -101,9 +111,43 @@ pass identity[claude]:     the notice describes a wooden rattle on an elastic co
                            sold as a grasping and teething toy (confidence 0.94)
 ```
 
-Across the household: 68 pairs were worth considering, 6 came back MATCH, 1
-needed one question answered, and 61 were cleared silently. Silence is most of
-the output and it is the correct output.
+Across the household, against 739 notices from all three regulators: 74 pairs
+were worth considering, 10 came back MATCH, 1 needed one question answered, and
+63 were cleared silently. Silence is most of the output and it is the correct
+output.
+
+Four of those matches are the household's 2021 Honda Accord against four real
+NHTSA campaigns, decided on the model identifier rather than on any text.
+
+## What happens after the claim goes out
+
+A claim nobody answers is not a finished job, so the case keeps moving.
+
+- **It is actually sent.** `agent/dispatch.py` puts the claim through SES from a
+  DKIM-verified domain. The SES account is still in the sandbox, so delivery
+  goes direct only when the manufacturer's address is itself verified or the
+  account has left the sandbox; otherwise it goes to a verified household
+  address, or to AWS's own mailbox simulator until that verifies. Whichever
+  happens, the case records `delivery.mode` and the true intended recipient, and
+  the agent repeats that to the household verbatim rather than claiming the
+  company has something it does not. Production access is one AWS support
+  request away and needs no code change.
+- **The reply is read.** `agent/reply.py` classifies what the company writes
+  back into refund confirmed, replacement shipped, repair scheduled, more info
+  needed, denied, or unrelated, and moves the case to where it now stands. It is
+  deliberately conservative: an autoreply carrying a ticket number is
+  `more_info_needed`, not a resolved case. That case is tested.
+- **A question can be answered with a photograph.** When the missing fact is a
+  code that only exists on the object, `agent/label.py` reads it off a photo of
+  the label. Measured on 10 real CPSC product photographs: 3 label-free shots
+  were correctly reported as having no code, 4 were declined as unreadable with
+  reshoot guidance, and 2 produced identifiers verified correct against the
+  feed's own data. Zero invented codes across every run. An early version did
+  fabricate barcode digits on a 240px image, which is why small images are
+  upscaled before the model sees them.
+
+Because a code is an identifier, it settles a case in either direction. Clearing
+your product as *not* part of the recalled batch is just as useful an answer.
 
 ## Running it
 
@@ -111,8 +155,12 @@ the output and it is the correct output.
 git clone https://github.com/kamalbuilds/pullback && cd pullback
 python3.12 -m venv .venv && .venv/bin/pip install -e .
 echo "ANTHROPIC_API_KEY=sk-..." > .env        # you place this, nothing else needs a key
-.venv/bin/python -m pytest tests -q           # 459 tests, no network, no credentials
+.venv/bin/python -m pytest tests -q           # 829 tests, no network, no credentials
 ```
+
+Tests that need a real model or real AWS are marked `live` and excluded by
+default, so the command above passes on a clean clone with no environment at
+all. Run them deliberately with `pytest tests -m live`.
 
 One pass over the demo household against the live feed:
 
@@ -130,8 +178,12 @@ unattended daily run with `./infra/deploy.sh`.
 |---|---|
 | `agent/feeds/` | CPSC, NHTSA and openFDA adapters. Each reduces its regulator's prose to one `Constraints` shape. |
 | `agent/engine/verdict.py` | The decision. Dates, money, identifiers. No model. |
-| `agent/engine/scan.py` | Narrows 434 notices to the handful worth a decision. |
-| `agent/pullback_agent.py` | The Strands agent, its six tools, and the veto hook. |
+| `agent/engine/scan.py` | Narrows 739 notices to the handful worth a decision, per source: prose for CPSC, model for a vehicle, lot code or UPC for food. |
+| `agent/engine/retrieval.py` | Optional semantic widening, for the pairs that share no words. `pip install -e '.[retrieval]'`. |
+| `agent/dispatch.py` | Sends the claim through SES, and records where it truly went. |
+| `agent/reply.py` | Reads the company's answer and moves the case to a terminal state. |
+| `agent/label.py` | Reads a lot code or UPC off a photograph of the product label. |
+| `agent/pullback_agent.py` | The Strands agent, its eight tools, the veto hook and the approval gate. |
 | `agent/store.py` | DynamoDB cases keyed by a deterministic case id, so a rerun never files twice. |
 | `agent/evidence.py` | The S3 pack a person can audit months later. |
 | `infra/` | Lambda for the unattended run, EventBridge Scheduler for the daily loop. |

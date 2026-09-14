@@ -11,7 +11,7 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
-import type { Case, TimelineEntry } from "./cases";
+import { isRun, RUN_PREFIX, type Case, type Run, type TimelineEntry } from "./cases";
 
 export const TABLE = process.env.PULLBACK_TABLE ?? "pullback-cases";
 export const HOUSEHOLD = process.env.PULLBACK_HOUSEHOLD ?? "kamal";
@@ -71,7 +71,7 @@ function coerce(raw: Record<string, unknown>): Case {
   };
 }
 
-async function fromCapture(): Promise<Case[]> {
+async function fromCapture(): Promise<{ cases: Case[]; runs: Run[] }> {
   const file = path.join(process.cwd(), ".local", "scan.json");
   let raw: string;
   try {
@@ -82,14 +82,32 @@ async function fromCapture(): Promise<Case[]> {
     );
   }
   const parsed = JSON.parse(raw) as { Items: Record<string, AttributeValue>[] };
-  return parsed.Items.map((item) => coerce(unmarshall(item))).filter(
-    (c) => c.household === HOUSEHOLD,
+  const rows = parsed.Items.map((item) => unmarshall(item)).filter(
+    (r) => r.household === HOUSEHOLD,
   );
+  return split(rows);
 }
 
-export async function listCases(): Promise<{ cases: Case[]; source: Source }> {
+/**
+ * One Query returns cases and run records together, because they share the partition key.
+ * They are split here and nowhere else, so no screen can accidentally render a run as a case.
+ */
+function split(rows: Record<string, unknown>[]): { cases: Case[]; runs: Run[] } {
+  const cases: Case[] = [];
+  const runs: Run[] = [];
+  for (const row of rows) {
+    if (isRun(row as { case_id?: string; record_type?: string })) {
+      runs.push(row as unknown as Run);
+    } else {
+      cases.push(coerce(row));
+    }
+  }
+  return { cases, runs };
+}
+
+export async function listCases(): Promise<{ cases: Case[]; runs: Run[]; source: Source }> {
   if (!hasCredentials()) {
-    return { cases: await fromCapture(), source: "local-capture" };
+    return { ...(await fromCapture()), source: "local-capture" };
   }
   const out = await db().send(
     new QueryCommand({
@@ -98,11 +116,11 @@ export async function listCases(): Promise<{ cases: Case[]; source: Source }> {
       ExpressionAttributeValues: marshall({ ":h": HOUSEHOLD }),
     }),
   );
-  const cases = (out.Items ?? []).map((item) => coerce(unmarshall(item)));
-  return { cases, source: "dynamodb" };
+  return { ...split((out.Items ?? []).map((item) => unmarshall(item))), source: "dynamodb" };
 }
 
 export async function getCase(caseId: string): Promise<{ item: Case | null; source: Source }> {
+  if (caseId.startsWith(RUN_PREFIX)) return { item: null, source: "dynamodb" };
   const { cases, source } = await listCases();
   return { item: cases.find((c) => c.case_id === caseId) ?? null, source };
 }

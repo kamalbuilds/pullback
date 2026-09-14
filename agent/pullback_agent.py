@@ -198,8 +198,12 @@ Work like this, one purchase at a time:
 2. For each candidate worth considering, call judge_identity with your honest read: is this the same product, how confident are you, and why. Cite the specific wording that convinced you. If a notice is about a different object, say same_product=false and move on.
 3. judge_identity returns the computed verdict. On MATCH, call open_case, then write_claim, then dispatch_remedy.
 
+   dispatch_remedy tells you where the claim actually went, and you repeat that, exactly. If it comes back in a mode other than "direct", the company has not received anything: say plainly where it went and why. Never tell the household a company has their claim when it does not. This matters more than sounding finished.
+
    dispatch_remedy is the one thing you cannot do alone. Sending a message to a company in someone's name is not yours to decide, so it waits for the household to approve it. When the answer comes back "waiting for a person", that is the system working. Say so once and move on to the next purchase. Do not retry it, do not reword the claim to get a different answer, and do not tell the household it was sent.
-4. On NEEDS_EVIDENCE, call open_case and then ask_household with the single most useful question. Ask for one thing, not a form.
+4. On NEEDS_EVIDENCE, call open_case and then ask_household with the single most useful question. Ask for one thing, not a form. When the missing fact is a code that only exists on the object itself, a UPC, a model number, a lot or date code, ask for a photograph of the label, and when one arrives call read_product_label. A code read off the label settles the case in either direction: it can clear the household's product as not part of the recalled batch, which is just as useful an answer as a match.
+
+5. When a company writes back, call record_reply with their message verbatim. Do not summarise it first and do not decide what it means yourself.
 5. On NO_MATCH, do nothing further with that pair. Silence is the correct output and most of your work will be silence.
 
 When you write a claim, write what a competent adult would send: the recall number, what they own, the evidence that it is inside the recall, and the specific remedy the notice offers. No greetings padded with feeling, no apology, no invented order numbers, no urgency theatre. Six sentences at most.
@@ -413,19 +417,113 @@ def build_agent(
         Args:
             case_id: The case to file.
         """
+        from agent.dispatch import send_claim
+
         case = ledger.cases.get(case_id)
         if case is None:
             return f"No open case {case_id}."
-        recipient = case["recall"]["contact_email"] or case["recall"]["contact_phone"] or "unlisted"
+
+        delivery = send_claim(case)
+        case["delivery"] = delivery
         ledger.dispatched.add(case_id)
         case["status"] = "dispatched"
+        # The timeline says where it actually went, never where it was aimed.
+        # SES is in sandbox, so a claim addressed to the manufacturer may have
+        # been delivered to a verified address or to the mailbox simulator
+        # instead, and a person reading this case months later has to be able
+        # to tell which of those happened.
         case["timeline"].append(
-            {"at": _now(), "event": "dispatched", "detail": f"claim filed with {recipient}"}
+            {
+                "at": _now(),
+                "event": "dispatched",
+                "detail": (
+                    f"claim sent to {delivery.get('to')} "
+                    f"(intended {delivery.get('intended')}, mode {delivery.get('mode')})"
+                ),
+            }
         )
         case["updated_at"] = _now()
         sink.write(case)
-        log("dispatched", f"{case_id} -> {recipient}")
-        return f"Filed with {recipient}. Tracking the reply on this case."
+        log("dispatched", f"{case_id} -> {delivery.get('to')} [{delivery.get('mode')}]")
+        return (
+            f"Sent to {delivery.get('to')} in {delivery.get('mode')} mode, "
+            f"message id {delivery.get('message_id')}. The intended recipient is "
+            f"{delivery.get('intended')}. Tracking the reply on this case."
+        )
+
+    @tool
+    def read_product_label(case_id: str, image_path: str) -> str:
+        """Read the code stamped on a product from a photograph of its label.
+
+        Use when a case is NEEDS_EVIDENCE and the missing fact is a code that
+        only exists on the object: a UPC, a model number, a lot or date code.
+
+        Args:
+            case_id: The case that is waiting on evidence.
+            image_path: Path to the photograph the household provided.
+        """
+        from agent.label import apply_reading, read_label, settle
+
+        case = ledger.cases.get(case_id)
+        if case is None:
+            return f"No open case {case_id}."
+        asking_for = ", ".join(case["verdict"]["missing"]) or "any code printed on the label"
+        reading = read_label(image_path, asking_for=asking_for)
+        if not reading.image_legible:
+            case["timeline"].append(
+                {"at": _now(), "event": "label_unreadable", "detail": reading.summary}
+            )
+            sink.write(case)
+            log("label_unreadable", f"{case_id}: {reading.summary[:80]}")
+            return f"That photo cannot be read: {reading.summary}"
+
+        recall = ledger.recalls[case["recall"]["recall_number"]]
+        case["purchase"] = apply_reading(case["purchase"], reading)
+        verdict = settle(case["purchase"], recall, reading)
+        ledger.record(case_id, verdict)
+        case["verdict"] = {
+            "outcome": verdict.outcome.value,
+            "checks": [asdict(c) for c in verdict.checks],
+            "missing": list(verdict.missing),
+            "evidence_id": verdict.evidence_id,
+        }
+        case["status"] = "awaiting_approval" if verdict.outcome is Outcome.MATCH else "dismissed"
+        case["timeline"].append(
+            {
+                "at": _now(),
+                "event": "label_read",
+                "detail": f"{reading.summary} Verdict is now {verdict.outcome.value}.",
+            }
+        )
+        case["updated_at"] = _now()
+        sink.write(case)
+        log("label_read", f"{case_id}: {verdict.outcome.value}")
+        return f"Read the label. The verdict is now {verdict.outcome.value}.\n" + "\n".join(
+            f"  {c}" for c in verdict.checks
+        )
+
+    @tool
+    def record_reply(case_id: str, reply_text: str) -> str:
+        """Read what the company wrote back and move the case to where it now stands.
+
+        Args:
+            case_id: The case the reply belongs to.
+            reply_text: The manufacturer's message, verbatim.
+        """
+        from agent.reply import apply_reply, classify_reply
+
+        case = ledger.cases.get(case_id)
+        if case is None:
+            return f"No open case {case_id}."
+        classification = classify_reply(case, reply_text)
+        updated = apply_reply(case, classification)
+        ledger.cases[case_id] = updated
+        sink.write(updated)
+        log("reply_recorded", f"{case_id}: {classification.get('outcome')} -> {updated['status']}")
+        return (
+            f"The company's reply reads as {classification.get('outcome')}. "
+            f"The case is now {updated['status']}."
+        )
 
     @tool
     def ask_household(case_id: str, question: str) -> str:
@@ -452,6 +550,8 @@ def build_agent(
         write_claim,
         dispatch_remedy,
         ask_household,
+        read_product_label,
+        record_reply,
     ]
 
     agent = Agent(
