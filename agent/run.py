@@ -30,12 +30,21 @@ def load_recalls(*, since: date, live: bool) -> list[Recall]:
     is missing, it asks for exactly that.
     """
     if not live:
+        # Every source, not just CPSC. A cached run that quietly drops the
+        # vehicle and food feeds shows a household with no car and no groceries,
+        # which is a demo that lies by omission.
         cached = json.loads((DATA / "cpsc_2026.json").read_text())
-        return [
+        recalls = [
             cpsc.parse_recall(item)
             for item in cached
             if item["RecallDate"][:10] >= since.isoformat()
         ]
+        vehicles = json.loads((DATA / "nhtsa_sample.json").read_text())
+        recalls.extend(nhtsa.parse_recall(item) for item in vehicles.get("results", []))
+        enforcement = json.loads((DATA / "openfda_sample.json").read_text())
+        for payload in enforcement.values():
+            recalls.extend(openfda.parse_recall(item) for item in payload.get("results", []))
+        return recalls
 
     recalls = list(cpsc.fetch(since))
     try:
@@ -57,6 +66,35 @@ def load_vehicle_recalls(vehicles: list[dict]) -> list[Recall]:
     return recalls
 
 
+def record_run(household: str, counts: dict, *, sink: CaseSink) -> None:
+    """Write down what the pass actually covered.
+
+    Without this the console can only count the cases it can see, which makes
+    it report "screened 7 purchases" after a pass that screened fifteen. The
+    number a person reads has to come from the run, not from its leftovers.
+
+    It shares the cases table under a `run#` sort key rather than getting a
+    table of its own: the console already has read access to exactly one
+    table, and widening that to brag about throughput is a bad trade.
+    """
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    sink.write(
+        {
+            "household": household,
+            "case_id": f"run#{now}",
+            "record_type": "run",
+            "status": "run_summary",
+            "finished_at": now,
+            "created_at": now,
+            "updated_at": now,
+            "timeline": [{"at": now, "event": "run_finished", "detail": json.dumps(counts)}],
+            **counts,
+        }
+    )
+
+
 def run(*, live: bool, days: int, sink: CaseSink, only: str | None = None) -> dict:
     household, purchases, raw = load_household()
     recalls = load_recalls(since=date.today() - timedelta(days=days), live=live)
@@ -75,7 +113,8 @@ def run(*, live: bool, days: int, sink: CaseSink, only: str | None = None) -> di
                 "purchases": len(purchases),
                 "recalls": len(recalls),
                 "window_days": days,
-                "source": "live CPSC feed" if live else "cached CPSC snapshot",
+                "sources": sorted({r.source for r in recalls}),
+                "source": "live regulator feeds" if live else "captured feed snapshots",
             }
         ),
         flush=True,
@@ -102,6 +141,20 @@ def run(*, live: bool, days: int, sink: CaseSink, only: str | None = None) -> di
             f"{purchase.description!r} bought from {purchase.retailer} "
             f"on {purchase.purchased_on} for ${purchase.price}."
         )
+
+    record_run(
+        household,
+        {
+            "purchases_screened": len(purchases),
+            "recalls_screened": len(recalls),
+            "pairs_considered": ledger.considered,
+            "cases_opened": len(ledger.cases),
+            "dispatched": len(ledger.dispatched),
+            "vetoed": sum(1 for e in events if e["event"] == "veto"),
+            "sources": sorted({r.source for r in recalls}),
+        },
+        sink=sink,
+    )
 
     summary = {
         "event": "run_finished",

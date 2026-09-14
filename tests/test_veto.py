@@ -101,8 +101,14 @@ def test_the_hook_cancels_a_dispatch_that_is_actually_attempted():
     """
     from agent.pullback_agent import build_agent
 
-    agent, ledger, events = build_agent("kamal", [NOT_OWNED], [HABA], sink=_NullSink())
     cid = case_id("kamal", NOT_OWNED.purchase_id, HABA.recall_number)
+    # Approve it first, so the human gate lets the call reach the veto. This is
+    # the harder question and the one worth asking: a household can say send it,
+    # and the checks still refuse, because approval is permission to send a
+    # claim that passed, never permission to skip the checking.
+    agent, ledger, events = build_agent(
+        "kamal", [NOT_OWNED], [HABA], sink=_NullSink(), approvals={cid}
+    )
     ledger.record(cid, decide(NOT_OWNED, HABA))
     ledger.claims[cid] = "claim citing 26719"
     ledger.cases[cid] = {
@@ -159,3 +165,55 @@ def test_the_agent_and_the_store_agree_on_what_a_case_is_called():
         ("other-household", "amz-2026-0412", "26719"),
     ]:
         assert case_id(*args) == CaseStore.case_id(*args)
+
+
+def test_a_perfect_match_is_still_not_sent_without_a_person():
+    """The gate and the veto refuse for different reasons, and both must hold.
+
+    This case passes every check. The veto has nothing to object to. It still
+    must not leave the building until the household says so, because sending a
+    message to a company in someone's name is not the agent's call to make.
+    """
+    from agent.pullback_agent import build_agent
+
+    cid = case_id("kamal", OWNED.purchase_id, HABA.recall_number)
+    agent, ledger, events = build_agent("kamal", [OWNED], [HABA], sink=_NullSink())
+    ledger.record(cid, decide(OWNED, HABA))
+    ledger.claims[cid] = "claim citing 26719"
+    ledger.cases[cid] = {
+        "household": "kamal",
+        "case_id": cid,
+        "status": "awaiting_approval",
+        "recall": {"recall_number": "26719", "contact_email": "recall@habausa.com"},
+        "timeline": [],
+    }
+    assert ledger.may_dispatch(cid) is None, "the veto should have no objection to this case"
+
+    agent.tool.dispatch_remedy(case_id=cid)
+
+    assert cid not in ledger.dispatched, "a claim was sent without anyone approving it"
+    assert cid in ledger.pending_approval
+    assert ledger.cases[cid]["status"] == "awaiting_approval"
+
+
+def test_the_same_case_goes_out_once_the_household_approves():
+    from agent.pullback_agent import build_agent
+
+    cid = case_id("kamal", OWNED.purchase_id, HABA.recall_number)
+    agent, ledger, events = build_agent(
+        "kamal", [OWNED], [HABA], sink=_NullSink(), approvals={cid}
+    )
+    ledger.record(cid, decide(OWNED, HABA))
+    ledger.claims[cid] = "claim citing 26719"
+    ledger.cases[cid] = {
+        "household": "kamal",
+        "case_id": cid,
+        "status": "awaiting_approval",
+        "recall": {"recall_number": "26719", "contact_email": "recall@habausa.com"},
+        "timeline": [],
+    }
+
+    agent.tool.dispatch_remedy(case_id=cid)
+
+    assert cid in ledger.dispatched
+    assert ledger.cases[cid]["status"] == "dispatched"
