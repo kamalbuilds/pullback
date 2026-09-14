@@ -232,3 +232,39 @@ def test_the_same_case_goes_out_once_the_household_approves():
 
     assert cid in ledger.dispatched
     assert ledger.cases[cid]["status"] == "dispatched"
+
+
+def test_a_rerun_does_not_forget_that_the_claim_already_went_out(tmp_path):
+    """The durable guard against sending twice is the delivery record.
+
+    A second pass over the same household rebuilds the case from scratch. If
+    that overwrites the delivery record, the only persistent evidence that the
+    claim was already filed is gone, and a later run will file it again. This
+    happened in production: four cases lost their delivery record on a rerun.
+    """
+    from agent.pullback_agent import FileSink, build_agent
+
+    sink = FileSink(root=tmp_path)
+    cid = case_id("kamal", OWNED.purchase_id, HABA.recall_number)
+    sink.write(
+        {
+            "household": "kamal",
+            "case_id": cid,
+            "status": "dispatched",
+            "created_at": "2026-09-01T00:00:00+00:00",
+            "claim_text": "claim citing 26719",
+            "delivery": {"mode": "direct", "to": "recall@habausa.com", "message_id": "sent-already"},
+            "timeline": [{"at": "2026-09-01T00:00:00+00:00", "event": "dispatched", "detail": "filed"}],
+        }
+    )
+
+    agent, ledger, events = build_agent("kamal", [OWNED], [HABA], sink=sink)
+    ledger.record(cid, decide(OWNED, HABA))
+    agent.tool.open_case(purchase_id=OWNED.purchase_id, recall_number=HABA.recall_number)
+
+    reopened = sink.read("kamal", cid)
+    assert reopened["delivery"]["message_id"] == "sent-already", "the delivery record was lost"
+    assert reopened["created_at"] == "2026-09-01T00:00:00+00:00", "the case forgot when it opened"
+    assert reopened["status"] == "dispatched", "a sent case was reset to awaiting approval"
+    assert cid in ledger.dispatched, "the run does not know this claim already went out"
+    assert any(e["event"] == "already_sent" for e in events)

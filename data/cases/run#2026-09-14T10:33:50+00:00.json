@@ -1,0 +1,27 @@
+{
+  "household": "kamal",
+  "case_id": "run#2026-09-14T10:33:50+00:00",
+  "record_type": "run",
+  "status": "run_summary",
+  "finished_at": "2026-09-14T10:33:50+00:00",
+  "created_at": "2026-09-14T10:33:50+00:00",
+  "updated_at": "2026-09-14T10:33:50+00:00",
+  "timeline": [
+    {
+      "at": "2026-09-14T10:33:50+00:00",
+      "event": "run_finished",
+      "detail": "{\"purchases_screened\": 1, \"recalls_screened\": 739, \"pairs_considered\": 6, \"cases_opened\": 1, \"dispatched\": 0, \"vetoed\": 0, \"sources\": [\"CPSC\", \"NHTSA\", \"openFDA\"]}"
+    }
+  ],
+  "purchases_screened": 1,
+  "recalls_screened": 739,
+  "pairs_considered": 6,
+  "cases_opened": 1,
+  "dispatched": 0,
+  "vetoed": 0,
+  "sources": [
+    "CPSC",
+    "NHTSA",
+    "openFDA"
+  ]
+}
