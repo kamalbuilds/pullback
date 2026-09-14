@@ -13,7 +13,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from agent.engine.scan import candidates, load_household
-from agent.feeds import cpsc
+from agent.feeds import cpsc, nhtsa, openfda
 from agent.feeds.base import Recall
 from agent.pullback_agent import CaseSink, DynamoSink, FileSink, build_agent
 
@@ -21,15 +21,47 @@ DATA = Path(__file__).parent.parent / "data"
 
 
 def load_recalls(*, since: date, live: bool) -> list[Recall]:
-    if live:
-        return cpsc.fetch(since)
-    cached = json.loads((DATA / "cpsc_2026.json").read_text())
-    return [cpsc.parse_recall(item) for item in cached if item["RecallDate"][:10] >= since.isoformat()]
+    """Every regulator that publishes about a household's things.
+
+    CPSC and NHTSA describe circumstance: where a thing was sold, when, for how
+    much. openFDA describes identity instead: lot codes and UPCs, with no sold
+    window and no price anywhere in the schema. The verdict engine already
+    handles both, because an identifier settles a case on its own and, when one
+    is missing, it asks for exactly that.
+    """
+    if not live:
+        cached = json.loads((DATA / "cpsc_2026.json").read_text())
+        return [
+            cpsc.parse_recall(item)
+            for item in cached
+            if item["RecallDate"][:10] >= since.isoformat()
+        ]
+
+    recalls = list(cpsc.fetch(since))
+    try:
+        recalls.extend(openfda.fetch_all(since))
+    except Exception as exc:  # a regulator being down must not stop the pass
+        print(json.dumps({"event": "feed_degraded", "source": "openFDA", "detail": str(exc)[:160]}))
+    return recalls
+
+
+def load_vehicle_recalls(vehicles: list[dict]) -> list[Recall]:
+    recalls: list[Recall] = []
+    for vehicle in vehicles:
+        try:
+            recalls.extend(
+                nhtsa.fetch_by_vehicle(vehicle["make"], vehicle["model"], vehicle["model_year"])
+            )
+        except Exception as exc:
+            print(json.dumps({"event": "feed_degraded", "source": "NHTSA", "detail": str(exc)[:160]}))
+    return recalls
 
 
 def run(*, live: bool, days: int, sink: CaseSink, only: str | None = None) -> dict:
-    household, purchases, _ = load_household()
+    household, purchases, raw = load_household()
     recalls = load_recalls(since=date.today() - timedelta(days=days), live=live)
+    if live:
+        recalls.extend(load_vehicle_recalls(raw.get("vehicles", [])))
     if only:
         purchases = [p for p in purchases if p.purchase_id == only]
 
