@@ -63,7 +63,7 @@ export function EvidenceForm({ caseId, missing }: { caseId: string; missing: str
   return (
     <form
       onSubmit={submit}
-      className="mt-8 rounded-[4px] border border-rule-strong p-6"
+      className="mt-8 rounded-[2px] border border-rule-strong p-6"
       style={{ background: "var(--sheet)" }}
     >
       <p className="prose-16 max-w-[54ch]">

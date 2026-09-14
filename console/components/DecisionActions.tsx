@@ -39,7 +39,7 @@ export function DecisionActions({
   }
 
   return (
-    <div className="mt-8 rounded-[4px] border border-rule-strong p-6" style={{ background: "var(--sheet)" }}>
+    <div className="mt-8 rounded-[2px] border border-rule-strong p-6" style={{ background: "var(--sheet)" }}>
       <p className="prose-16 max-w-[54ch]">
         Sending this asks {recipient} for {remedy}. Pullback keeps chasing it until the remedy
         lands or the manufacturer refuses in writing.

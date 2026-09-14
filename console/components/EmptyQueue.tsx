@@ -45,16 +45,21 @@ export function EmptyQueue({
     .slice(0, 4);
 
   return (
-    <section className="report-in pt-20">
-      <h1 className="statement max-w-[18ch]">Nothing needs you.</h1>
+    <section className="report-in pt-16">
+      <div className="cleared-tag">
+        <span className="cleared-stamp" aria-hidden="true">
+          Cleared
+        </span>
+        <h1 className="statement max-w-[18ch]">Nothing needs you.</h1>
 
-      <p className="prose-16 mt-7 max-w-[60ch]" style={{ color: "var(--ink-2)" }}>
-        {`${throughputSentence(watch)} ${outcomeSentence(cases, watch)}`.trim()}
-      </p>
+        <p className="prose-16 mt-6 max-w-[58ch]" style={{ color: "var(--ink-2)" }}>
+          {`${throughputSentence(watch)} ${outcomeSentence(cases, watch)}`.trim()}
+        </p>
 
-      {watch.lastRun ? (
-        <p className="micro mt-6">{`last run ${ago(watch.lastRun)}, ${stampUTC(watch.lastRun)}`}</p>
-      ) : null}
+        {watch.lastRun ? (
+          <p className="micro mt-6">{`last run ${ago(watch.lastRun)}, ${stampUTC(watch.lastRun)}`}</p>
+        ) : null}
+      </div>
 
       {closed.length ? (
         <div className="mt-16">

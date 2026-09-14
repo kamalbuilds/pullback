@@ -1,57 +1,72 @@
 @import "tailwindcss";
 
-:root {
-  --paper: #f3f4f2;
-  --sheet: #fcfcfb;
-  --sheet-2: #eeefec;
-  --ink: #15181a;
-  --ink-2: #454b4d;
-  --ink-3: #6e7573;
-  --rule: #dee0db;
-  --rule-strong: #c4c8c1;
-  --seal: #1b4b3a;
-  --on-seal: #f7faf8;
-  --alarm: #8c1d18;
-  --pending: #7a5210;
-  --alarm-wash: rgba(140, 29, 24, 0.06);
-  --seal-wash: rgba(27, 75, 58, 0.07);
-}
+/* ---------------------------------------------------------------------------
+   Pullback: the hang-tag system.
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #121417;
-    --sheet: #191c20;
-    --sheet-2: #1f2328;
-    --ink: #e8eae7;
-    --ink-2: #a8aeac;
-    --ink-3: #7c8481;
-    --rule: #2a2e33;
-    --rule-strong: #3a3f45;
-    --seal: #5fa98c;
-    --on-seal: #0e1512;
-    --alarm: #e08078;
-    --pending: #d3a24e;
-    --alarm-wash: rgba(224, 128, 120, 0.08);
-    --seal-wash: rgba(95, 169, 140, 0.1);
-  }
+   A recall notice arrives as prose about an object. The console renders the
+   object back: every case is a swing tag, the kind stapled to a toy at the
+   store, with a punched hole, a perforated header, a stamped hazard band and a
+   spec block with dotted leaders. Paper is bone, ink is near-black, hazard owns
+   oxblood and nothing else does.
+
+   Light only. A hang tag is paper; paper does not have a dark mode.
+   --------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  --paper: #efece3;
+  --tag: #fffdf8;
+  --tag-2: #f6f2e8;
+  --ink: #14161a;
+  --ink-2: #4a4e54;
+  --ink-3: #7e8188;
+  --rule: #ddd7c9;
+  --rule-strong: #c2bba8;
+  --perf: #b8b0a0;
+  --hazard: #8c1d18;
+  --hazard-wash: #f7ece9;
+  --pending: #8a5a0b;
+  --clear: #2f5c3f;
+  --on-ink: #fbf9f4;
+
+  --t-statement: clamp(30px, 2.4vw + 17px, 46px);
+  --t-tag-title: clamp(19px, 0.5vw + 17px, 22px);
+
+  /* Role aliases. The rest of the tree names the semantic, not the hue: a
+     resolved case asks for --seal, a hazard asks for --alarm, a panel asks for
+     --sheet. The hang-tag system answers with its own paper and ink so no file
+     outside this one carries a colour literal. */
+  --seal: var(--clear);
+  --alarm: var(--hazard);
+  --alarm-wash: var(--hazard-wash);
+  --seal-wash: #eef3ef;
+  --sheet: var(--tag);
+  --sheet-2: var(--tag-2);
 }
 
 @theme inline {
   --color-paper: var(--paper);
-  --color-sheet: var(--sheet);
-  --color-sheet-2: var(--sheet-2);
+  --color-tag: var(--tag);
+  --color-tag-2: var(--tag-2);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-rule: var(--rule);
   --color-rule-strong: var(--rule-strong);
-  --color-seal: var(--seal);
-  --color-on-seal: var(--on-seal);
-  --color-alarm: var(--alarm);
+  --color-hazard: var(--hazard);
   --color-pending: var(--pending);
-  --font-serif: var(--font-newsreader), Georgia, "Times New Roman", serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
-  --radius-sharp: 4px;
+  --color-clear: var(--clear);
+  --font-sans: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-space-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* Old token names, still referenced by inline styles across the tree. The
+     hang tag system has no seal and no alarm; they resolve to hazard and ink so
+     nothing renders a colour this system does not own. */
+  --color-seal: var(--seal);
+  --color-alarm: var(--alarm);
+  --color-sheet: var(--sheet);
+  --color-sheet-2: var(--sheet-2);
 }
 
 @layer base {
@@ -62,16 +77,28 @@
 
   body {
     background-color: var(--paper);
+    /* The paper has a tooth. Two crossing hairlines at 3% give the bone ground
+       a weave under a large screen, instead of a flat fill. */
+    background-image:
+      repeating-linear-gradient(
+        0deg,
+        rgba(20, 22, 26, 0.022) 0 1px,
+        transparent 1px 4px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(20, 22, 26, 0.022) 0 1px,
+        transparent 1px 4px
+      );
     color: var(--ink);
-    font-family: var(--font-newsreader), Georgia, "Times New Roman", serif;
-    font-size: 16px;
-    line-height: 1.6;
-    font-variation-settings: "opsz" 16;
+    font-family: var(--font-sans);
+    font-size: 15.5px;
+    line-height: 1.55;
   }
 
   ::selection {
-    background: var(--seal);
-    color: var(--on-seal);
+    background: var(--ink);
+    color: var(--on-ink);
   }
 
   a {
@@ -80,81 +107,215 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--seal);
+    outline: 2px solid var(--ink);
     outline-offset: 2px;
-    border-radius: 2px;
+    border-radius: 1px;
   }
 }
 
 @layer components {
+  /* Type roles ------------------------------------------------------------ */
+
   .label {
-    font-family: var(--font-plex-mono), ui-monospace, monospace;
-    font-size: 10.5px;
-    font-weight: 500;
-    letter-spacing: 0.11em;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     line-height: 1;
     color: var(--ink-3);
   }
 
   .micro {
-    font-family: var(--font-plex-mono), ui-monospace, monospace;
-    font-size: 11.5px;
-    line-height: 1.45;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.5;
     font-variant-numeric: tabular-nums;
     color: var(--ink-3);
   }
 
   .data {
-    font-family: var(--font-plex-mono), ui-monospace, monospace;
-    font-size: 13px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
     line-height: 1.55;
     font-variant-numeric: tabular-nums;
   }
 
   .statement {
-    font-size: clamp(30px, 2.2vw + 18px, 42px);
-    line-height: 1.1;
-    font-weight: 400;
-    letter-spacing: -0.012em;
-    font-variation-settings: "opsz" 36;
-  }
-
-  .record-title {
-    font-size: clamp(21px, 0.8vw + 17px, 25px);
-    line-height: 1.22;
-    font-weight: 400;
-    letter-spacing: -0.008em;
-    font-variation-settings: "opsz" 28;
-  }
-
-  .hazard {
-    font-size: clamp(16px, 0.4vw + 14.5px, 18px);
-    line-height: 1.45;
-    color: var(--alarm);
+    font-size: var(--t-statement);
+    line-height: 1.04;
+    font-weight: 600;
+    letter-spacing: -0.028em;
+    text-wrap: balance;
   }
 
   .prose-16 {
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 15.5px;
+    line-height: 1.58;
   }
+
+  .hazard {
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--hazard);
+  }
+
+  /* The tag -------------------------------------------------------------- */
+
+  .tag {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--tag);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    /* Top-left corner is clipped, the way a swing tag is cut so the string
+       clears the edge. */
+    clip-path: polygon(22px 0, 100% 0, 100% 100%, 0 100%, 0 22px);
+    padding: 0;
+    box-shadow: 0 1px 0 rgba(20, 22, 26, 0.04);
+  }
+
+  /* The punched hole, with its reinforcing ring, sits on the cut corner. */
+  .tag::before {
+    content: "";
+    position: absolute;
+    top: 13px;
+    left: 13px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: 0 0 0 1px var(--rule-strong);
+  }
+
+  .tag-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 18px 12px 44px;
+    border-bottom: 1px dashed var(--perf);
+  }
+
+  .tag-body {
+    padding: 18px 18px 0;
+  }
+
+  .tag-title {
+    font-size: var(--t-tag-title);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+
+  .tag-foot {
+    margin-top: auto;
+    padding: 16px 18px 18px;
+  }
+
+  /* The hazard band: stamped, not decorated. */
+  .band {
+    margin: 16px 0 0;
+    padding: 11px 14px;
+    background: var(--hazard-wash);
+    border-left: 3px solid var(--hazard);
+    color: var(--hazard);
+    font-size: 14.5px;
+    line-height: 1.42;
+  }
+
+  /* Spec block: label, dotted leader, value. What a real tag prints. */
+  .spec {
+    margin-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+
+  .spec-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .spec-key {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+
+  .spec-lead {
+    flex: 1 1 auto;
+    min-width: 12px;
+    border-bottom: 1px dotted var(--rule-strong);
+    transform: translateY(-3px);
+  }
+
+  .spec-val {
+    color: var(--ink);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* Check chips: the audit trail, as the boxes a QC stamp fills in. */
+  .checks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 5px 8px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 1px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-2);
+    background: var(--tag-2);
+  }
+
+  .chip-fail {
+    border-color: var(--hazard);
+    color: var(--hazard);
+    background: var(--hazard-wash);
+  }
+
+  /* Buttons -------------------------------------------------------------- */
 
   .btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     white-space: nowrap;
-    font-family: var(--font-plex-mono), ui-monospace, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.09em;
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    padding: 11px 18px;
-    border-radius: 4px;
+    padding: 12px 18px;
+    border-radius: 2px;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: background-color 120ms ease-out, border-color 120ms ease-out,
-      transform 80ms ease-out, opacity 120ms ease-out;
+    transition:
+      background-color 110ms ease-out,
+      border-color 110ms ease-out,
+      transform 70ms ease-out,
+      opacity 110ms ease-out;
   }
 
   .btn:active:not(:disabled) {
@@ -162,17 +323,17 @@
   }
 
   .btn:disabled {
-    opacity: 0.42;
+    opacity: 0.4;
     cursor: not-allowed;
   }
 
   .btn-primary {
-    background: var(--seal);
-    color: var(--on-seal);
+    background: var(--ink);
+    color: var(--on-ink);
   }
 
   .btn-primary:hover:not(:disabled) {
-    filter: brightness(1.12);
+    background: #000;
   }
 
   .btn-secondary {
@@ -183,28 +344,32 @@
 
   .btn-secondary:hover:not(:disabled) {
     border-color: var(--ink-3);
-    background: var(--sheet-2);
+    background: var(--tag-2);
   }
 
   .btn-destructive {
-    border-color: var(--alarm);
-    color: var(--alarm);
+    border-color: var(--hazard);
+    color: var(--hazard);
     background: transparent;
   }
 
   .btn-destructive:hover:not(:disabled) {
-    background: var(--alarm-wash);
+    background: var(--hazard-wash);
+  }
+
+  .btn-block {
+    width: 100%;
   }
 
   .field {
     width: 100%;
-    background: var(--sheet-2);
+    background: var(--tag-2);
     border: 1px solid var(--rule-strong);
-    border-radius: 4px;
+    border-radius: 2px;
     padding: 10px 12px;
     color: var(--ink);
-    font-family: var(--font-plex-mono), ui-monospace, monospace;
-    font-size: 13px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
     line-height: 1.5;
   }
 
@@ -212,27 +377,196 @@
     color: var(--ink-3);
   }
 
-  .record {
-    display: block;
-    border-bottom: 1px solid var(--rule);
-    padding: 26px 0 28px;
-    transition: background-color 120ms ease-out;
-  }
-
-  .record:hover {
-    background: var(--sheet-2);
-  }
-
-  .record:hover .record-action {
-    text-decoration: underline;
-    text-underline-offset: 3px;
+  /* A panel: same paper as a tag, no hole. Used on the case page. */
+  .panel {
+    background: var(--tag);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    padding: 20px;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Header: the tag board the tags hang from.
+   --------------------------------------------------------------------------- */
+
+.board {
+  background: var(--tag);
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.board-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 62px;
+}
+
+.wordmark {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.nav-link {
+  position: relative;
+  padding-bottom: 5px;
+}
+
+.nav-link[data-active="true"] {
+  border-bottom: 2px solid var(--ink);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------------------
+   The count block above the tags. Role, then the number, then the cost.
+   --------------------------------------------------------------------------- */
+
+.count-block {
+  padding: 40px 0 30px;
+}
+
+.count-meta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 10px;
+}
+
+.count-cost {
+  margin-top: 14px;
+  padding-left: 12px;
+  border-left: 3px solid var(--hazard);
+  color: var(--hazard);
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+
+.count-machine {
+  margin-top: 14px;
+  max-width: 66ch;
+}
+
+/* The grid the tags hang in. Two per row on a desk, one on a phone. */
+.tag-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 860px) {
+  .tag-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   The empty queue is the product working, so it gets the one piece of paper on
+   the page: a tag with nothing written on it but the QC stamp.
+   --------------------------------------------------------------------------- */
+
+.cleared-tag {
+  position: relative;
+  max-width: 640px;
+  background: var(--tag);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  clip-path: polygon(24px 0, 100% 0, 100% 100%, 0 100%, 0 24px);
+  padding: 34px 32px 32px;
+}
+
+.cleared-tag::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px var(--rule-strong);
+}
+
+.cleared-stamp {
+  position: absolute;
+  top: 24px;
+  right: 26px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--clear);
+  border: 2px solid var(--clear);
+  border-radius: 2px;
+  padding: 6px 10px;
+  transform: rotate(-4deg);
+  opacity: 0.85;
+}
+
+/* ---------------------------------------------------------------------------
+   The shelf: everything screened, cleared or not. A stock list, not a queue.
+   --------------------------------------------------------------------------- */
+
+.shelf {
+  margin-top: 54px;
+  padding-top: 20px;
+  border-top: 2px solid var(--rule-strong);
+}
+
+.shelf-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.shelf-list {
+  margin-top: 12px;
+  list-style: none;
+  padding: 0;
+}
+
+.shelf-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.shelf-thing {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 15px;
+}
+
+.shelf-verdict {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.shelf-note {
+  margin-top: 14px;
+  max-width: 68ch;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion: two things move, both as feedback. Reduced motion kills both.
+   --------------------------------------------------------------------------- */
 
 @keyframes report-in {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -241,7 +575,7 @@
 }
 
 .report-in {
-  animation: report-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: report-in 380ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
