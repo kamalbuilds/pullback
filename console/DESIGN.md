@@ -1,152 +1,135 @@
-# Pullback console design system
+# Pullback console design system: the hang tag
 
 ## The one thing this interface has to do
 
-Pullback runs on a schedule without being opened. The console is not where the work happens,
-it is where the work surfaces when a person has to decide something. So the interface is
-graded on its empty state first and its dense state second. Every decision below follows from
-that: an empty queue must read as a finished night shift, not as an app with nothing in it.
+Pullback runs on a schedule without being opened. The console is where work surfaces when a
+person has to decide something, so it is graded on its empty state first and its dense state
+second. An empty queue reads as a finished night shift, never as an app with nothing in it.
 
 The reader is a parent. In the 2026 CPSC corpus this agent screens against, 317 of 434 recall
-titles contain the word "death". The register is a public notice, calm and exact. Not a
-dashboard, not a wellness app, not cute.
+titles contain the word "death". The register is a product safety notice: exact, unhurried, not
+cute.
+
+## The metaphor
+
+A recall notice arrives as prose about an object. This console renders the object back. Every
+case is a **swing tag**, the kind stapled through a toy at the store: a cut corner, a punched
+hole with its reinforcing ring, a perforated header carrying the notice number, a stamped hazard
+band, and a spec block with dotted leaders. Nothing on the page is a dashboard card.
+
+Three consoles in this family must never look like one product with three datasets:
+
+| Axis | Pullback | Lapse | Best By |
+|---|---|---|---|
+| Metaphor | swing tag on the object | cyanotype drawing sheet | stamped case and dual sheets |
+| Paper | bone, light only | blueprint blue, dark only | warm carton kraft |
+| Type | Archivo + Space Mono | Barlow Condensed + Barlow + IBM Plex Mono | Literata + JetBrains Mono |
+| Action | ink black fill | chalk white fill | indigo stamp fill |
+| Layout | two-up tag grid | ruled sheet with dimension lines | persistent SHELF / KITCHENS split |
+| Radius | 2px | 0 | 0 to 1px |
+
+Banned here because a sibling owns them: any serif, IBM Plex Mono, JetBrains Mono, a single
+hairline document spine as the home layout, a blue or indigo primary, a printed grid ground.
+
+## Light only
+
+A hang tag is paper. Paper has no dark mode, so `color-scheme: light` is declared and there is
+no `prefers-color-scheme` block. The bone ground carries a 2% crossing weave at 4px so it reads
+as stock rather than as a flat fill.
 
 ## Type
 
-Two families. The split carries the argument: the serif is what the agent says, the mono is
-what the agent can prove.
-
 | Family | Role |
 |---|---|
-| Newsreader (variable, 400/500, optical sizing on) | statements, hazards, prose, headlines |
-| IBM Plex Mono (400/500) | every fact: dates, prices, ids, check details, labels, buttons |
+| Archivo (variable, 400/500/600) | statements, tag titles, hazard sentences, prose |
+| Space Mono (400/700) | every fact: dates, prices, ids, spec values, check chips, buttons |
 
-Newsreader is a screen news serif, not a display serif. It is chosen because a recall notice
-is a published record and this product's whole claim is that it read one correctly. Fraunces
-and Instrument Serif are banned. There is no sans in this system.
+The split carries the argument: the sans is what the agent says, the mono is what it can prove.
+No number a person compares is ever set in the sans.
 
-### Scale
+| Token | Spec | Used for |
+|---|---|---|
+| `--t-statement` | clamp(30px, 2.4vw + 17px, 46px), Archivo 600, -0.028em | the count above the board, case headline |
+| `--t-tag-title` | clamp(19px, 0.5vw + 17px, 22px), Archivo 500 | the thing on a tag |
+| `.band` | 14.5px / 1.42, `--hazard` | the hazard sentence, and nothing else |
+| `.data` | Space Mono 12.5px, tabular | check details, claim text, timeline detail |
+| `.spec-key` | Space Mono 700 10px, 0.1em caps | spec labels on a tag |
+| `.label` | Space Mono 700 10px, 0.15em caps | section labels, status marks |
+| `.micro` | Space Mono 11px, tabular | timestamps, ids, counts |
 
-| Token | Size / line | Family | Used for |
-|---|---|---|---|
-| `--t-statement` | clamp(30px, 2.2vw + 18px, 42px) / 1.1 | Newsreader 400 | empty-state report, case headline |
-| `--t-record` | clamp(21px, 0.8vw + 17px, 25px) / 1.22 | Newsreader 400 | one queue record's subject |
-| `--t-hazard` | clamp(16px, 0.4vw + 14.5px, 18px) / 1.45 | Newsreader 400 | the hazard sentence |
-| `--t-prose` | 16px / 1.6 | Newsreader 400 | body, secondary statements |
-| `--t-data` | 13px / 1.55 | Plex Mono 400 | check details, timeline detail, claim text |
-| `--t-label` | 10.5px / 1 | Plex Mono 500, `0.11em` tracking, uppercase | section labels, field names |
-| `--t-micro` | 11.5px / 1.4 | Plex Mono 400 | timestamps, case ids, counts |
+## Colour
 
-Numerals are always `tabular-nums` in mono. Prices, dates and counts never render in the serif.
+| Role | Value | Meaning |
+|---|---|---|
+| `--paper` | `#EFECE3` | the board the tags hang on |
+| `--tag` | `#FFFDF8` | a tag, a panel |
+| `--tag-2` | `#F6F2E8` | inset block, claim letter, chip |
+| `--ink` | `#14161A` | primary text, and the primary button fill |
+| `--ink-2` | `#4A4E54` | secondary prose |
+| `--ink-3` | `#7E8188` | labels, timestamps |
+| `--rule` | `#DDD7C9` | hairline inside a tag |
+| `--rule-strong` | `#C2BBA8` | tag edge, input border |
+| `--perf` | `#B8B0A0` | the dashed perforation under a tag header |
+| `--hazard` | `#8C1D18` | hazard band, failed check, and nothing else |
+| `--pending` | `#8A5A0B` | waiting on a person |
+| `--clear` | `#2F5C3F` | passed check, resolved case, the CLEARED stamp |
 
-## Color roles
+The action colour is ink, not a hue. A parent pressing a black button on a paper tag is pressing
+the only thing on the page that is not paper. Hazard owns oxblood; nothing else may use it.
 
-One accent (`--seal`), two semantic states (`--alarm`, `--pending`). The accent is a green
-because the product's argument is that most things get closed without you; green is the
-resolved state and the primary action, and it is never used for hazard. Hazard owns oxblood
-and nothing else owns oxblood.
+## Shape and space
 
-| Role | Light | Dark | Meaning |
-|---|---|---|---|
-| `--paper` | `#F3F4F2` | `#121417` | page |
-| `--sheet` | `#FCFCFB` | `#191C20` | a record, a panel |
-| `--sheet-2` | `#EEEFEC` | `#1F2328` | inset block, claim letter, code |
-| `--ink` | `#15181A` | `#E8EAE7` | primary text |
-| `--ink-2` | `#454B4D` | `#A8AEAC` | secondary prose |
-| `--ink-3` | `#6E7573` | `#7C8481` | labels, timestamps |
-| `--rule` | `#DEE0DB` | `#2A2E33` | hairline between records |
-| `--rule-strong` | `#C4C8C1` | `#3A3F45` | input border, table head rule |
-| `--seal` | `#1B4B3A` | `#5FA98C` | agent action, resolved, primary button |
-| `--on-seal` | `#F7FAF8` | `#0E1512` | text on the accent |
-| `--alarm` | `#8C1D18` | `#E08078` | hazard sentence, failed check |
-| `--pending` | `#7A5210` | `#D3A24E` | waiting on a person |
+4px base. Steps: 4, 8, 12, 16, 18, 24, 32, 48, 54.
+Container is `max-width: 1120px`, `padding-inline: 20px` rising to 28px.
+Radius is 2px everywhere, with no second radius in the system. Nothing is a pill or a circle
+except the punched hole, which is a hole.
+Elevation is a 1px border plus a 1px hairline shadow at 4%, never a soft drop shadow.
 
-No pure black, no pure white. Backgrounds are cool neutral, deliberately not the cream and
-brass palette that every generated "trustworthy" page reaches for.
+## Components
 
-## Space and shape
+### Tag (a queue record)
 
-4px base unit. Steps used: 4, 8, 12, 16, 24, 32, 48, 64, 96.
-Container is a single reading column, `max-width: 1080px`, `padding-inline: 24px`.
-Vertical rhythm between queue records is a 1px `--rule`, not a gap. Records are sheets of one
-document, not floating cards.
+`clip-path` cuts the top left corner at 22px; `::before` draws the punched hole and its ring on
+the cut. Header row: notice number left, status mark right, dashed `--perf` rule under it. Body:
+title, hazard band, spec block, check chips. Foot: exactly one primary action, full width, with
+the age and a link to the checks under it. Two per row at 860px and up, one below.
 
-Radius is `4px` everywhere, with no second radius anywhere in the system. Nothing is a pill,
-nothing is a circle.
-Elevation is expressed with a hairline border and a background shift, never a drop shadow.
+### Spec row
 
-## Components and their states
+`label · dotted leader · value`, the way a real tag prints. Values are mono and tabular so two
+tags side by side line up on the decimal.
 
-### Record (a queue row)
+### Check chip
 
-Two columns at `lg`: a reading column and a 178px right rail. The rail carries the status
-mark, the age, the notice number and the notice date, right aligned, so the page has a spine
-and the rules run the full width. The reading column carries, in the order a person needs it:
-the subject in serif, what it cost and where it came from in mono, the hazard in `--alarm`,
-the agent's decision line in mono, and exactly one action. Below `lg` the rail stacks on top.
+One box per check the engine ran, mono caps, with a tick or a cross. Failed chips carry the
+hazard border and wash. The chip's `title` is the exact string the engine produced, never a
+paraphrase.
 
-| State | Treatment |
-|---|---|
-| rest | 1px `--rule` bottom, `padding: 26px 0 28px`, rules aligned to the content column |
-| hover | background `--sheet-2`, action underline appears |
-| focus-visible | 2px `--seal` outline, 2px offset, on the whole record link |
-| pressed | `translateY(1px)` |
-| disabled action | `--ink-3` text, `cursor: not-allowed`, native `title` states the real reason |
+### Cleared tag (the empty queue)
 
-### Status mark
-
-One mono uppercase word in the state colour, and nothing else. No coloured dot, no square, no
-pill, no badge. `needs you` = `--pending`, `claim sent` = `--ink-2`, `closed` = `--seal`,
-`no match` = `--ink-3`.
-
-### Check row (the audit trail)
-
-Grid: `[mark] [name, mono] [detail, mono, tabular]`. Passed rows use `--ink` on `--sheet`.
-Failed rows use `--alarm` for the mark and the name, and carry a 2px left rule in `--alarm`.
-The detail is never paraphrased. It is the string the engine produced.
+The empty queue is the product working, so it gets the one piece of paper on the page: a tag with
+nothing written on it but a rotated `CLEARED` stamp in `--clear`, the statement, and a mono
+report of what ran while the person was away. Every number in it is read from the cases table.
 
 ### Buttons
 
-| Variant | Rest | Hover | Focus | Disabled |
-|---|---|---|---|---|
-| primary | `--seal` fill, `--on-seal` text, mono uppercase 11px | brightness 1.08 | 2px offset `--seal` ring | 40% opacity, real reason in `title` |
-| secondary | transparent, 1px `--rule-strong`, `--ink` | border `--ink-3` | same ring | same |
-| destructive | transparent, 1px `--alarm`, `--alarm` text | `--alarm` 6% wash | ring in `--alarm` | same |
-
-Labels are two words at most and never wrap.
-
-### Input (evidence form)
-
-Label above in `--t-label`, input `--sheet-2` with 1px `--rule-strong`, focus ring 2px `--seal`.
-Helper text below in `--t-micro` `--ink-3`. Error text below in `--alarm`. No placeholder as label.
-Contrast of every text-on-background pair here clears WCAG AA.
-
-### Empty queue
-
-Not a component, the point of the product. A single serif statement, then a mono report of
-what ran while the person was away, then the case count that closed without them. Every number
-in it is read from the cases table, never a constant. The button under it invokes the screening
-Lambda asynchronously and says a run started, never that one finished, because an async invoke
-cannot know. It is disabled with a stated reason when `PULLBACK_AGENT_FUNCTION` is unset.
+Primary is `--ink` fill with `--on-ink` text, mono caps, full width inside a tag. Secondary is a
+1px `--rule-strong` outline. Destructive is a hazard outline. Disabled keeps the shape, drops to
+40% and states the real reason in `title`.
 
 ## Motion
 
-`MOTION_INTENSITY 2`. Three animations exist in the whole console.
-
-1. Record hover background, 120ms ease-out. Feedback.
-2. Button press `translateY(1px)`, 80ms. Feedback.
-3. Empty-state report fades up 8px over 420ms on load. Storytelling: the report is the answer
-   to the question the person opened the page with.
-
-Everything collapses to instant under `prefers-reduced-motion: reduce`. No scroll hijack, no
-marquee, no parallax, no skeleton shimmer, no spinners.
+Two animations exist. The empty-state report fades up 6px over 380ms, because the report is the
+answer to the question the person opened the page with. Buttons translate 1px on press. Hover
+changes colour only. Everything collapses under `prefers-reduced-motion: reduce`. No skeletons,
+no spinners, no parallax, no scroll hijack.
 
 ## Rules this console holds itself to
 
-- Zero em dashes anywhere in copy or code.
-- No hardcoded case data in any component. Every figure on screen came out of DynamoDB in a
-  server component, and the number a person reads can be traced to a row.
-- No emoji, no icon library, no decorative SVG. The only glyphs are type.
-- One action per record. A row of buttons is a product that has not decided what matters.
+- No em dashes anywhere in copy or code.
+- No hardcoded case data in any component. Every figure came out of DynamoDB in a server
+  component and traces to a row.
+- No emoji, no icon library, no decorative SVG. The only glyphs are type, a tick, and a cross.
+- One action per tag. A row of buttons is a product that has not decided what matters.
 - Empty states say what happened, never "No data".
 - Each route owns its own `<title>` from a server component.
