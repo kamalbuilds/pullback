@@ -30,7 +30,7 @@ export function ChecksTable({ checks }: { checks: Check[] }) {
               : { borderLeft: "2px solid var(--alarm)", paddingLeft: "14px", background: "var(--alarm-wash)" }
           }
         >
-          <div className="grid grid-cols-1 gap-1 sm:grid-cols-[64px_156px_1fr] sm:items-baseline sm:gap-5">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-[50px_128px_1fr] sm:items-baseline sm:gap-4">
             <span
               className="label"
               style={{ color: check.passed ? "var(--seal)" : "var(--alarm)" }}

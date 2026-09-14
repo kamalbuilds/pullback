@@ -3,7 +3,7 @@ import Link from "next/link";
 import { RunAgent } from "@/components/RunAgent";
 import type { Case, Watch } from "@/lib/cases";
 import { touchedByHuman } from "@/lib/cases";
-import { ago, longDate, plural } from "@/lib/format";
+import { ago, longDate, plural, stampUTC } from "@/lib/format";
 
 function screenedSentence(w: Watch): string {
   const head = `Pullback screened ${plural(w.purchases, "purchase")} in this household`;
@@ -52,7 +52,7 @@ export function EmptyQueue({
 
       {watch.lastRun ? (
         <p className="micro mt-6">
-          last run {ago(watch.lastRun)} at {watch.lastRun.replace("T", " ").replace("Z", "")} UTC
+          last run {ago(watch.lastRun)}, {stampUTC(watch.lastRun)}
         </p>
       ) : null}
 
@@ -64,7 +64,7 @@ export function EmptyQueue({
               <li key={c.case_id} className="border-b border-rule">
                 <Link
                   href={`/case/${c.case_id}`}
-                  className="grid grid-cols-1 gap-1 py-4 sm:grid-cols-[110px_1fr_auto] sm:items-baseline sm:gap-6"
+                  className="grid grid-cols-1 gap-1 py-4 sm:grid-cols-[136px_1fr_auto] sm:items-baseline sm:gap-6"
                 >
                   <span className="micro">{longDate(c.updated_at)}</span>
                   <span className="prose-16">{c.purchase.description}</span>

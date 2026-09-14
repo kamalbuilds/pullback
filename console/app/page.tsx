@@ -4,9 +4,10 @@ import Link from "next/link";
 import { EmptyQueue } from "@/components/EmptyQueue";
 import { Provenance } from "@/components/Provenance";
 import { QueueRecord } from "@/components/QueueRecord";
+import { RunAgent } from "@/components/RunAgent";
 import { queue, watch } from "@/lib/cases";
 import { plural } from "@/lib/format";
-import { agentUrl, listCases } from "@/lib/store";
+import { agentFunction, listCases } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function QueuePage() {
   if (!pending.length) {
     return (
       <>
-        <EmptyQueue cases={cases} watch={summary} agentEnabled={Boolean(agentUrl())} />
+        <EmptyQueue cases={cases} watch={summary} agentEnabled={Boolean(agentFunction())} />
         <Provenance source={source} count={cases.length} />
       </>
     );
@@ -35,7 +36,7 @@ export default async function QueuePage() {
 
   return (
     <>
-      <section className="pt-16">
+      <section className="pt-12">
         <h1 className="statement max-w-[20ch]">
           {word} {count === 1 ? "decision is" : "decisions are"} waiting for you.
         </h1>
@@ -47,17 +48,18 @@ export default async function QueuePage() {
         </p>
       </section>
 
-      <section className="mt-14 border-t border-rule">
+      <section className="mt-10 border-t border-rule">
         {pending.map((item) => (
           <QueueRecord key={item.case_id} item={item} />
         ))}
       </section>
 
-      <p className="mt-10">
+      <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-5">
+        <RunAgent enabled={Boolean(agentFunction())} />
         <Link href="/activity" className="data" style={{ color: "var(--seal)" }}>
           See everything the agent did unattended
         </Link>
-      </p>
+      </div>
 
       <Provenance source={source} count={cases.length} />
     </>

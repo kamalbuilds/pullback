@@ -35,6 +35,9 @@ export default async function CasePage({ params }: Params) {
     item.recall.contact_email ?? item.recall.contact_phone ?? item.recall.title.split(" Recalls")[0];
   const open = needsHuman(item);
   const evidenceSent = timeline.some((e) => e.event === "evidence.provided");
+  // The header already carries the first hazard sentence. Only show what it did not.
+  const headline = firstSentence(item.recall.hazards[0] ?? item.recall.title, 400);
+  const extraHazards = item.recall.hazards.filter((h) => h.trim() !== headline.trim());
 
   return (
     <>
@@ -63,7 +66,7 @@ export default async function CasePage({ params }: Params) {
         </p>
 
         <p className="hazard mt-6 max-w-[64ch]">
-          {firstSentence(item.recall.hazards[0] ?? item.recall.title, 400)}
+          {headline}
         </p>
       </header>
 
@@ -156,11 +159,8 @@ export default async function CasePage({ params }: Params) {
 
           <section className="mt-10">
             <h2 className="label">Remedy offered</h2>
-            <p className="data mt-3" style={{ color: "var(--ink-2)" }}>
-              {remedyPhrase(item.recall.remedy_kinds)}
-              {item.recall.remedy_kinds.length
-                ? ` (${item.recall.remedy_kinds.join(", ")})`
-                : ""}
+            <p className="prose-16 mt-3" style={{ color: "var(--ink-2)" }}>
+              The notice offers {remedyPhrase(item.recall.remedy_kinds)}.
             </p>
             {item.recall.contact_email ? (
               <p className="data mt-2" style={{ color: "var(--ink-2)" }}>
@@ -174,10 +174,14 @@ export default async function CasePage({ params }: Params) {
             ) : null}
           </section>
 
-          {item.recall.hazards.length ? (
+          {extraHazards.length ? (
             <section className="mt-10">
-              <h2 className="label">Hazard, in full</h2>
-              {item.recall.hazards.map((hazard) => (
+              <h2 className="label">
+                {extraHazards.length === item.recall.hazards.length
+                  ? "Hazard, in full"
+                  : "The rest of the hazard"}
+              </h2>
+              {extraHazards.map((hazard) => (
                 <p key={hazard} className="prose-16 mt-3" style={{ color: "var(--ink-2)" }}>
                   {hazard}
                 </p>

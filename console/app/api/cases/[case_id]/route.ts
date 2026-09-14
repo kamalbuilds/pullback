@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import type { Case, TimelineEntry } from "@/lib/cases";
 import { money } from "@/lib/format";
-import { agentUrl, applyMutation, getCase, HOUSEHOLD } from "@/lib/store";
+import { agentFunction, applyMutation, getCase, startAgentRun } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
@@ -21,32 +21,23 @@ function entry(event: string, detail: string): TimelineEntry {
  * says exactly which of the two happened: the agent took it, or it is waiting for the run.
  */
 async function notifyAgent(item: Case, reason: string): Promise<TimelineEntry> {
-  const url = agentUrl();
-  if (!url) {
+  const name = agentFunction();
+  if (!name) {
     return entry(
       "dispatch.queued",
-      `${reason} No agent endpoint is configured on this deployment, so the next scheduled run picks it up. Nothing has been sent yet.`,
+      `${reason} No agent function is configured on this deployment, so the next scheduled run picks it up. Nothing has been sent yet.`,
     );
   }
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ household: HOUSEHOLD, case_id: item.case_id, reason }),
-      signal: AbortSignal.timeout(20_000),
-    });
-    const text = (await res.text()).slice(0, 400);
-    if (!res.ok) {
-      return entry(
-        "dispatch.queued",
-        `${reason} The agent endpoint answered ${res.status}, so the claim is still unsent. ${text}`,
-      );
-    }
-    return entry("agent.notified", `${reason} The agent accepted the case. ${text}`);
+    await startAgentRun({ case_id: item.case_id, reason });
+    return entry(
+      "agent.notified",
+      `${reason} Lambda ${name} accepted the run. A pass takes 30 to 90 seconds, so the result lands on this timeline shortly.`,
+    );
   } catch (error) {
     return entry(
       "dispatch.queued",
-      `${reason} The agent endpoint could not be reached (${(error as Error).message}), so the claim is still unsent.`,
+      `${reason} Lambda ${name} refused the run (${(error as Error).message}), so the claim is still unsent.`,
     );
   }
 }
