@@ -11,11 +11,12 @@ from __future__ import annotations
 
 import calendar
 import re
-from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
 
 import httpx
+
+from agent.feeds.base import Constraints, Recall
 
 BASE = "https://www.saferproducts.gov/RestWebServices/Recall"
 
@@ -71,57 +72,6 @@ def _parse_month_year(s: str, *, end: bool) -> date | None:
         return date(year, month, 1)
     last_day = calendar.monthrange(year, month)[1]
     return date(year, month, last_day)
-
-
-@dataclass(frozen=True)
-class Constraints:
-    """What a purchase record must satisfy for a recall to possibly apply."""
-
-    sold_start: date | None = None
-    sold_end: date | None = None
-    price_low: float | None = None
-    price_high: float | None = None
-    retailers: tuple[str, ...] = ()
-    upcs: tuple[str, ...] = ()
-    models: tuple[str, ...] = ()
-
-    @property
-    def checkable(self) -> bool:
-        return bool(
-            self.upcs
-            or self.models
-            or (self.sold_start and self.sold_end)
-            or (self.price_low is not None)
-        )
-
-
-@dataclass(frozen=True)
-class Recall:
-    recall_id: int
-    recall_number: str
-    recall_date: date
-    title: str
-    description: str
-    url: str
-    hazards: tuple[str, ...]
-    remedies: tuple[str, ...]
-    remedy_kinds: tuple[str, ...]
-    contact_raw: str
-    contact_email: str | None
-    contact_phone: str | None
-    units: str | None
-    constraints: Constraints = field(default_factory=Constraints)
-
-    @property
-    def child_related(self) -> bool:
-        text = f"{self.title} {self.description}".lower()
-        return bool(
-            re.search(
-                r"\b(child|children|toddler|infant|baby|babies|nursery|crib|bassinet|"
-                r"stroller|car seat|highchair|high chair|toy|toys|youth|kids)\b",
-                text,
-            )
-        )
 
 
 def _retailer_lines(raw: list[dict[str, Any]]) -> tuple[list[str], list[str]]:
@@ -197,7 +147,8 @@ def parse_recall(payload: dict[str, Any]) -> Recall:
     email = _EMAIL.search(contact)
     phone = _PHONE.search(contact)
     return Recall(
-        recall_id=int(payload["RecallID"]),
+        source="CPSC",
+        recall_id=str(payload["RecallID"]),
         recall_number=str(payload.get("RecallNumber") or ""),
         recall_date=date.fromisoformat(payload["RecallDate"][:10]),
         title=(payload.get("Title") or "").strip(),
