@@ -345,6 +345,21 @@ def run_agent_pass(household_filter: str | None = None) -> dict:
         agent_summary["dispatched"] += len(ledger.dispatched)
         agent_summary["vetoed"] += sum(1 for e in events if e["event"] == "veto")
 
+    from agent.run import record_run
+
+    record_run(
+        household,
+        {
+            "purchases_screened": summary.get("purchases_checked", 0),
+            "recalls_screened": len(recalls),
+            "cases_opened": agent_summary["verdicts"],
+            "dispatched": agent_summary["dispatched"],
+            "vetoed": agent_summary["vetoed"],
+            "sources": sorted({r.source for r in recalls}),
+        },
+        sink=DynamoSink(),
+    )
+
     summary["agent"] = agent_summary
     _log("agent_pass_done", **agent_summary)
     return summary

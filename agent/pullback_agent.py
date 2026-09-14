@@ -31,6 +31,7 @@ from typing import Any, Callable
 
 from strands import Agent, tool
 from strands.hooks import BeforeToolCallEvent, HookProvider, HookRegistry
+from strands.vended_interventions import HumanInTheLoop
 from strands.models.anthropic import AnthropicModel
 
 from agent.engine.scan import Finding, candidates, load_household
@@ -63,6 +64,8 @@ class Ledger:
     claims: dict[str, str] = field(default_factory=dict)
     cases: dict[str, dict] = field(default_factory=dict)
     dispatched: set[str] = field(default_factory=set)
+    approvals: set[str] = field(default_factory=set)
+    pending_approval: set[str] = field(default_factory=set)
     considered: int = 0
 
     def record(self, cid: str, verdict: Verdict) -> None:
@@ -106,6 +109,54 @@ class RemedyVeto(HookProvider):
             event.cancel_tool = f"REFUSED by the remedy veto: {refusal}"
 
 
+def approval_gate(ledger: Ledger, log: Callable[[str, str], None]) -> HumanInTheLoop:
+    """The one call a person has to make.
+
+    Everything else the agent does is reversible: reading notices, computing a
+    verdict, opening a case, drafting a claim. Sending a message to a company in
+    someone's name is not, so it is the single tool that can never be trusted
+    away. `allowed_tools` is a wildcard with `dispatch_remedy` negated, which in
+    Strands means it always requires approval even if a caller has trusted
+    everything else in this session.
+
+    In an unattended run nobody is at a terminal, so the gate does not block. It
+    records the case as waiting for a person and lets the pass continue to the
+    next purchase. The console is where the answer comes back: an approved case
+    id is handed to the next run, and the same gate then lets it through.
+
+    The veto hook still runs underneath this. Approval is permission to send a
+    claim that already passed every check; it is not permission to skip them.
+    """
+
+    def ask(prompt: str, **_: Any) -> str:
+        try:
+            payload = json.loads(prompt.split("Input: ", 1)[1])
+            cid = payload.get("case_id", "")
+        except (IndexError, ValueError):
+            cid = ""
+        if cid and cid in ledger.approvals:
+            log("approved", f"{cid} was approved by the household")
+            return "yes"
+        ledger.pending_approval.add(cid)
+        case = ledger.cases.get(cid)
+        if case is not None:
+            case["status"] = "awaiting_approval"
+            case["timeline"].append(
+                {
+                    "at": _now(),
+                    "event": "approval_requested",
+                    "detail": "The claim is written and waiting for the household to send it.",
+                }
+            )
+        log("awaiting_approval", f"{cid} is drafted and waiting for a person")
+        return "no"
+
+    def evaluate(response: Any, **_: Any) -> bool:
+        return str(response).strip().lower() in {"y", "yes", "approve", "approved"}
+
+    return HumanInTheLoop(allowed_tools=["*", "!dispatch_remedy"], ask=ask, evaluate=evaluate)
+
+
 class CaseSink:
     """Where cases go when the run ends. Both implementations are real."""
 
@@ -146,6 +197,8 @@ Work like this, one purchase at a time:
 1. Call candidate_notices for the purchase.
 2. For each candidate worth considering, call judge_identity with your honest read: is this the same product, how confident are you, and why. Cite the specific wording that convinced you. If a notice is about a different object, say same_product=false and move on.
 3. judge_identity returns the computed verdict. On MATCH, call open_case, then write_claim, then dispatch_remedy.
+
+   dispatch_remedy is the one thing you cannot do alone. Sending a message to a company in someone's name is not yours to decide, so it waits for the household to approve it. When the answer comes back "waiting for a person", that is the system working. Say so once and move on to the next purchase. Do not retry it, do not reword the claim to get a different answer, and do not tell the household it was sent.
 4. On NEEDS_EVIDENCE, call open_case and then ask_household with the single most useful question. Ask for one thing, not a form.
 5. On NO_MATCH, do nothing further with that pair. Silence is the correct output and most of your work will be silence.
 
@@ -187,12 +240,13 @@ def build_agent(
     *,
     sink: CaseSink | None = None,
     model_id: str = MODEL_ID,
-    require_approval: bool = True,
+    approvals: set[str] | None = None,
 ) -> tuple[Agent, Ledger, list[dict]]:
     ledger = Ledger(
         household=household,
         purchases={p.purchase_id: p for p in purchases},
         recalls={r.recall_number: r for r in recalls},
+        approvals=set(approvals or ()),
     )
     sink = sink or FileSink()
     events: list[dict] = []
@@ -405,5 +459,6 @@ def build_agent(
         system_prompt=SYSTEM_PROMPT,
         tools=tools,
         hooks=[RemedyVeto(ledger, log)],
+        interventions=[approval_gate(ledger, log)],
     )
     return agent, ledger, events
