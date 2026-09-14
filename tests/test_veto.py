@@ -142,3 +142,20 @@ class _NullSink:
 
     def write(self, case: dict) -> str:
         return "memory://" + case["case_id"]
+
+
+def test_the_agent_and_the_store_agree_on_what_a_case_is_called():
+    """Two modules compute the idempotency key. They must never drift apart.
+
+    agent/pullback_agent.py hashes it during a run and agent/store.py hashes it
+    on write. If those ever disagree, every rerun opens a second case for the
+    same purchase and the same notice, and the claim goes out twice.
+    """
+    from agent.store import CaseStore
+
+    for args in [
+        ("kamal", "amz-2026-0412", "26719"),
+        ("kamal", "hd-2024-0302", "26702"),
+        ("other-household", "amz-2026-0412", "26719"),
+    ]:
+        assert case_id(*args) == CaseStore.case_id(*args)
