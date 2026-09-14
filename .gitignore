@@ -6,3 +6,9 @@ node_modules/
 .next/
 .env
 .env.local
+build/
+console/node_modules/
+console/.next/
+console/.vercel/
+console/.local/
+docs/*.visual-check.*
