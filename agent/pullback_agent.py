@@ -154,6 +154,32 @@ When you write a claim, write what a competent adult would send: the recall numb
 Hazards in these notices include infant death. Say what the hazard is plainly and once. Do not soften it and do not dramatise it."""
 
 
+def households() -> dict[str, list[dict]]:
+    """Every household the scheduled pass should check, in wire shape.
+
+    One file today. This is the seam a second household arrives through, and
+    the scheduled Lambda calls it rather than reaching into data/ itself.
+    Purchases come back as plain dicts because that is what crosses into the
+    Lambda's case records and into DynamoDB; the dataclass is a local detail.
+    """
+    household, purchases, _ = load_household()
+    return {
+        household: [
+            {
+                "purchase_id": p.purchase_id,
+                "description": p.description,
+                "retailer": p.retailer,
+                "purchased_on": p.purchased_on.isoformat(),
+                "price": p.price,
+                "quantity": p.quantity,
+                "upc": p.upc,
+                "model": p.model,
+            }
+            for p in purchases
+        ]
+    }
+
+
 def build_agent(
     household: str,
     purchases: list[Purchase],
