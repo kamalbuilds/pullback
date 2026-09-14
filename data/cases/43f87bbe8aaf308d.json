@@ -1,0 +1,80 @@
+{
+  "household": "kamal",
+  "case_id": "43f87bbe8aaf308d",
+  "status": "dispatched",
+  "purchase": {
+    "purchase_id": "amz-2026-0412",
+    "description": "HABA Rainbow Rattle wooden grasping and teething toy for babies",
+    "retailer": "Amazon.com",
+    "purchased_on": "2026-04-12",
+    "price": 12.99,
+    "quantity": 1,
+    "upc": null,
+    "model": null
+  },
+  "recall": {
+    "source": "CPSC",
+    "recall_number": "26719",
+    "title": "HABA USA Recalls Rainbow Rattle Grasping and Teething Toys Due to Risk of Serious Injury or Death from Choking and Ingestion Hazards",
+    "url": "https://www.cpsc.gov/Recalls/2026/HABA-USA-Recalls-Rainbow-Rattle-Grasping-and-Teething-Toys-Due-to-Risk-of-Serious-Injury-or-Death-from-Choking-and-Ingestion-Hazards?utm_campaign=&utm_content=&utm_medium=email&utm_source=govdelivery&utm_term=20260827",
+    "recall_date": "2026-08-27",
+    "hazards": [
+      "The glued knot on the elastic cord can become untied on the recalled product, allowing young children access to the small wooden and plastic pieces, posing a risk of serious injury or death from choking and ingestion hazards."
+    ],
+    "remedy_kinds": [
+      "refund",
+      "destroy",
+      "stop_use"
+    ],
+    "contact_email": "recall@habausa.com",
+    "contact_phone": "800-468-6873"
+  },
+  "verdict": {
+    "outcome": "MATCH",
+    "checks": [
+      {
+        "name": "retailer",
+        "passed": true,
+        "detail": "'Amazon.com' appears in the notice"
+      },
+      {
+        "name": "sold_window",
+        "passed": true,
+        "detail": "bought 2026-04-12 inside sold window 2025-12-01..2026-07-31"
+      },
+      {
+        "name": "price_band",
+        "passed": true,
+        "detail": "paid $12.99 inside $10.40..$15.60"
+      },
+      {
+        "name": "identity[claude-sonnet-4-5-20250929]",
+        "passed": true,
+        "detail": "Purchase is 'HABA Rainbow Rattle wooden grasping and teething toy for babies' and notice describes 'HABA Rainbow Rattle Grasping and Teething Toy'. Both match on brand (HABA), product name (Rainbow Rattle), and function (grasping and teething toy). The notice specifies item number 2012261001 and batch code 0925, which may need verification, but the product description is an exact match. (confidence 0.95)"
+      }
+    ],
+    "missing": [],
+    "evidence_id": "26719:amz-2026-0412:MATCH"
+  },
+  "timeline": [
+    {
+      "at": "2026-09-14T08:41:44+00:00",
+      "event": "opened",
+      "detail": "verdict MATCH"
+    },
+    {
+      "at": "2026-09-14T08:41:48+00:00",
+      "event": "claim_written",
+      "detail": "76 words"
+    },
+    {
+      "at": "2026-09-14T08:41:50+00:00",
+      "event": "dispatched",
+      "detail": "claim filed with recall@habausa.com"
+    }
+  ],
+  "evidence_uri": null,
+  "claim_text": "I am filing a claim under recall number 26719 for a HABA Rainbow Rattle Grasping and Teething Toy purchased from Amazon.com on April 12, 2026 for $12.99. The glued knot on the elastic cord can become untied, allowing access to small wooden and plastic pieces that pose a risk of choking and death. I am requesting a refund as specified in the recall notice. I have stopped using the product and will destroy it as instructed.",
+  "created_at": "2026-09-14T08:41:44+00:00",
+  "updated_at": "2026-09-14T08:41:50+00:00"
+}

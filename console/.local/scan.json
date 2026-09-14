@@ -1,0 +1,1573 @@
+{
+    "Items": [
+        {
+            "updated_at": {
+                "S": "2026-09-03T09:12:49Z"
+            },
+            "household": {
+                "S": "kamal"
+            },
+            "created_at": {
+                "S": "2026-09-03T09:12:44Z"
+            },
+            "verdict": {
+                "M": {
+                    "missing": {
+                        "L": []
+                    },
+                    "checks": {
+                        "L": [
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "retailer"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "\"Carter's\" appears in the notice"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "sold_window"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "bought 2025-11-08 inside sold window 2025-01-01..2026-03-31"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "price_band"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "paid $12.00 inside $9.60..$14.40"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "description_overlap"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "100% of the receipt's words appear in the notice (['baby', 'elmo', 'hop', 'sesame', 'silicone', 'skip'])"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "evidence_id": {
+                        "S": "26739:carters-8841-2:MATCH"
+                    },
+                    "outcome": {
+                        "S": "MATCH"
+                    }
+                }
+            },
+            "status": {
+                "S": "awaiting_approval"
+            },
+            "claim_text": {
+                "S": "To Skip Hop Inc. (recall 26739),\n\nI am writing about the Baby Sesame Street Elmo Silicone Teether recalled by CPSC on\nSeptember 3, 2026 because the black eyes can detach when the teether is frozen.\n\nI bought one on November 8, 2025 at Carter's for $12.00. That date falls inside the\nsold window in the notice (January 2025 through March 2026) and the price falls inside\nthe stated range of $9.60 to $14.40.\n\nThe teether is already out of my child's reach and will not be used again. I am\nrequesting the refund described in the notice, issued as a Carter's gift card, along\nwith your disposal instructions.\n\nPurchase record and the matching notice are attached as evidence bundle 0d0ce319f8d8c66b.\n\nKamal\nPullback case 0d0ce319f8d8c66b"
+            },
+            "evidence_uri": {
+                "S": "s3://pullback-evidence-079415246611/kamal/0d0ce319f8d8c66b/bundle.json"
+            },
+            "case_id": {
+                "S": "0d0ce319f8d8c66b"
+            },
+            "recall": {
+                "M": {
+                    "hazards": {
+                        "L": [
+                            {
+                                "S": "The black eyes can detach from the recalled teether if frozen, posing a risk of serious injury or death from a choking hazard."
+                            }
+                        ]
+                    },
+                    "remedy_kinds": {
+                        "L": [
+                            {
+                                "S": "refund"
+                            },
+                            {
+                                "S": "stop_use"
+                            }
+                        ]
+                    },
+                    "contact_phone": {
+                        "S": "800-692-4674"
+                    },
+                    "source": {
+                        "S": "CPSC"
+                    },
+                    "title": {
+                        "S": "Skip Hop Recalls Baby Sesame Street Elmo Silicone Teethers Due to Risk of Serious Injury or Death from Choking Hazard"
+                    },
+                    "recall_date": {
+                        "S": "2026-09-03"
+                    },
+                    "recall_number": {
+                        "S": "26739"
+                    },
+                    "url": {
+                        "S": "https://www.cpsc.gov/Recalls/2026/Skip-Hop-Recalls-Baby-Sesame-Street-Elmo-Silicone-Teethers-Due-to-Risk-of-Serious-Injury-or-Death-from-Choking-Hazard"
+                    },
+                    "contact_email": {
+                        "NULL": true
+                    }
+                }
+            },
+            "purchase": {
+                "M": {
+                    "purchased_on": {
+                        "S": "2025-11-08"
+                    },
+                    "quantity": {
+                        "N": "1"
+                    },
+                    "retailer": {
+                        "S": "Carter's"
+                    },
+                    "price": {
+                        "N": "12"
+                    },
+                    "purchase_id": {
+                        "S": "carters-8841-2"
+                    },
+                    "description": {
+                        "S": "Skip Hop Baby Sesame Street Elmo silicone teether"
+                    },
+                    "upc": {
+                        "NULL": true
+                    },
+                    "model": {
+                        "NULL": true
+                    }
+                }
+            },
+            "timeline": {
+                "L": [
+                    {
+                        "M": {
+                            "event": {
+                                "S": "recall.ingested"
+                            },
+                            "at": {
+                                "S": "2026-09-03T09:12:44Z"
+                            },
+                            "detail": {
+                                "S": "CPSC published 434 notices in 2026 through September. Notice 26739 was new in this pull."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "purchase.screened"
+                            },
+                            "at": {
+                                "S": "2026-09-03T09:12:47Z"
+                            },
+                            "detail": {
+                                "S": "Screened 6 purchase records in this household against 1 new notice."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "verdict.recorded"
+                            },
+                            "at": {
+                                "S": "2026-09-03T09:12:47Z"
+                            },
+                            "detail": {
+                                "S": "MATCH. 4 of 4 checks passed on purchase carters-8841-2."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "claim.drafted"
+                            },
+                            "at": {
+                                "S": "2026-09-03T09:12:49Z"
+                            },
+                            "detail": {
+                                "S": "Refund claim drafted for Skip Hop Inc. Remedy is a Carter's gift card per the notice."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "approval.requested"
+                            },
+                            "at": {
+                                "S": "2026-09-03T09:12:49Z"
+                            },
+                            "detail": {
+                                "S": "The remedy asks the household to dispose of the teether, so the claim waits for a person."
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-09-10T06:02:21Z"
+            },
+            "household": {
+                "S": "kamal"
+            },
+            "created_at": {
+                "S": "2026-09-10T06:02:18Z"
+            },
+            "verdict": {
+                "M": {
+                    "missing": {
+                        "L": []
+                    },
+                    "checks": {
+                        "L": [
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "retailer"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "'Walmart.com' appears in the notice"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "sold_window"
+                                    },
+                                    "passed": {
+                                        "BOOL": false
+                                    },
+                                    "detail": {
+                                        "S": "bought 2024-07-03 outside sold window 2026-03-01..2026-06-30"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "price_band"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "paid $31.99 inside $22.00..$36.00"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "description_overlap"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "80% of the receipt's words appear in the notice (['bicycle', 'black', 'helmet', 'victgoal'])"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "evidence_id": {
+                        "S": "26749:walmart-70998104:NO_MATCH"
+                    },
+                    "outcome": {
+                        "S": "NO_MATCH"
+                    }
+                }
+            },
+            "status": {
+                "S": "dismissed"
+            },
+            "claim_text": {
+                "S": ""
+            },
+            "evidence_uri": {
+                "S": "s3://pullback-evidence-079415246611/kamal/23c7d8785880574c/bundle.json"
+            },
+            "case_id": {
+                "S": "23c7d8785880574c"
+            },
+            "recall": {
+                "M": {
+                    "hazards": {
+                        "L": [
+                            {
+                                "S": "The recalled helmets violate the mandatory safety standard for bicycle helmets because the helmets do not comply with the retention system, positional stability and certification requirements. The helmets can fail to protect the user in the event of a crash, posing a serious risk of injury or death due to head injury."
+                            }
+                        ]
+                    },
+                    "remedy_kinds": {
+                        "L": [
+                            {
+                                "S": "refund"
+                            }
+                        ]
+                    },
+                    "contact_phone": {
+                        "NULL": true
+                    },
+                    "source": {
+                        "S": "CPSC"
+                    },
+                    "title": {
+                        "S": "Victgoal Recalls Bicycle Helmets Due to Risk of Serious Injury or Death from Head Injury; Violate Mandatory Standard for Bicycle Helmets"
+                    },
+                    "recall_date": {
+                        "S": "2026-09-10"
+                    },
+                    "recall_number": {
+                        "S": "26749"
+                    },
+                    "url": {
+                        "S": "https://www.cpsc.gov/Recalls/2026/Victgoal-Recalls-Bicycle-Helmets-Due-to-Risk-of-Serious-Injury-or-Death-from-Head-Injury-Violate-Mandatory-Standard-for-Bicycle-Helmets"
+                    },
+                    "contact_email": {
+                        "S": "walmart@victgoal.com"
+                    }
+                }
+            },
+            "purchase": {
+                "M": {
+                    "purchased_on": {
+                        "S": "2024-07-03"
+                    },
+                    "quantity": {
+                        "N": "1"
+                    },
+                    "retailer": {
+                        "S": "Walmart.com"
+                    },
+                    "price": {
+                        "N": "31.99"
+                    },
+                    "purchase_id": {
+                        "S": "walmart-70998104"
+                    },
+                    "description": {
+                        "S": "Victgoal adult bicycle helmet, black, size L"
+                    },
+                    "upc": {
+                        "NULL": true
+                    },
+                    "model": {
+                        "NULL": true
+                    }
+                }
+            },
+            "timeline": {
+                "L": [
+                    {
+                        "M": {
+                            "event": {
+                                "S": "recall.ingested"
+                            },
+                            "at": {
+                                "S": "2026-09-10T06:02:18Z"
+                            },
+                            "detail": {
+                                "S": "CPSC published 434 notices in 2026 through September. Notice 26749 was new in this pull."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "purchase.screened"
+                            },
+                            "at": {
+                                "S": "2026-09-10T06:02:21Z"
+                            },
+                            "detail": {
+                                "S": "Screened 6 purchase records in this household against 1 new notice."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "verdict.recorded"
+                            },
+                            "at": {
+                                "S": "2026-09-10T06:02:21Z"
+                            },
+                            "detail": {
+                                "S": "NO_MATCH. The sold window check failed, so nothing was sent and nobody was asked."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "case.closed"
+                            },
+                            "at": {
+                                "S": "2026-09-10T06:02:21Z"
+                            },
+                            "detail": {
+                                "S": "Closed without human involvement."
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-08-27T06:31:06Z"
+            },
+            "household": {
+                "S": "kamal"
+            },
+            "created_at": {
+                "S": "2026-08-27T06:31:02Z"
+            },
+            "verdict": {
+                "M": {
+                    "missing": {
+                        "L": [
+                            {
+                                "S": "where it was bought"
+                            }
+                        ]
+                    },
+                    "checks": {
+                        "L": [
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "sold_window"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "bought 2026-02-14 inside sold window 2025-12-01..2026-07-31"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "price_band"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "paid $12.99 inside $10.40..$15.60"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "description_overlap"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "100% of the receipt's words appear in the notice (['grasping', 'haba', 'rainbow', 'rattle', 'teething', 'toy'])"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "evidence_id": {
+                        "S": "26719:gift-2026-02-14:NEEDS_EVIDENCE"
+                    },
+                    "outcome": {
+                        "S": "NEEDS_EVIDENCE"
+                    }
+                }
+            },
+            "status": {
+                "S": "needs_evidence"
+            },
+            "claim_text": {
+                "S": "To HABA USA (recall 26719),\n\nI am writing about the HABA Rainbow Rattle Grasping and Teething Toy recalled by CPSC\non August 27, 2026 because the glued knot on the elastic cord can come untied and\nrelease small wooden and plastic pieces.\n\nI have one, bought on February 14, 2026 for $12.99. I am requesting the full refund\ndescribed in the notice and will destroy the toy by cutting the elastic cord and send\nthe photograph you ask for.\n\nPurchase record and the matching notice are attached as evidence bundle 50708413cf15d9fc.\n\nKamal\nPullback case 50708413cf15d9fc"
+            },
+            "evidence_uri": {
+                "S": "s3://pullback-evidence-079415246611/kamal/50708413cf15d9fc/bundle.json"
+            },
+            "case_id": {
+                "S": "50708413cf15d9fc"
+            },
+            "recall": {
+                "M": {
+                    "hazards": {
+                        "L": [
+                            {
+                                "S": "The glued knot on the elastic cord can become untied on the recalled product, allowing young children access to the small wooden and plastic pieces, posing a risk of serious injury or death from choking and ingestion hazards."
+                            }
+                        ]
+                    },
+                    "remedy_kinds": {
+                        "L": [
+                            {
+                                "S": "refund"
+                            },
+                            {
+                                "S": "destroy"
+                            },
+                            {
+                                "S": "stop_use"
+                            }
+                        ]
+                    },
+                    "contact_phone": {
+                        "S": "800-468-6873"
+                    },
+                    "source": {
+                        "S": "CPSC"
+                    },
+                    "title": {
+                        "S": "HABA USA Recalls Rainbow Rattle Grasping and Teething Toys Due to Risk of Serious Injury or Death from Choking and Ingestion Hazards"
+                    },
+                    "recall_date": {
+                        "S": "2026-08-27"
+                    },
+                    "recall_number": {
+                        "S": "26719"
+                    },
+                    "url": {
+                        "S": "https://www.cpsc.gov/Recalls/2026/HABA-USA-Recalls-Rainbow-Rattle-Grasping-and-Teething-Toys-Due-to-Risk-of-Serious-Injury-or-Death-from-Choking-and-Ingestion-Hazards?utm_campaign=&utm_content=&utm_medium=email&utm_source=govdelivery&utm_term=20260827"
+                    },
+                    "contact_email": {
+                        "S": "recall@habausa.com"
+                    }
+                }
+            },
+            "purchase": {
+                "M": {
+                    "purchased_on": {
+                        "S": "2026-02-14"
+                    },
+                    "quantity": {
+                        "N": "1"
+                    },
+                    "retailer": {
+                        "S": ""
+                    },
+                    "price": {
+                        "N": "12.99"
+                    },
+                    "purchase_id": {
+                        "S": "gift-2026-02-14"
+                    },
+                    "description": {
+                        "S": "HABA Rainbow Rattle grasping and teething toy"
+                    },
+                    "upc": {
+                        "NULL": true
+                    },
+                    "model": {
+                        "NULL": true
+                    }
+                }
+            },
+            "timeline": {
+                "L": [
+                    {
+                        "M": {
+                            "event": {
+                                "S": "recall.ingested"
+                            },
+                            "at": {
+                                "S": "2026-08-27T06:31:02Z"
+                            },
+                            "detail": {
+                                "S": "CPSC published 434 notices in 2026 through September. Notice 26719 was new in this pull."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "purchase.screened"
+                            },
+                            "at": {
+                                "S": "2026-08-27T06:31:05Z"
+                            },
+                            "detail": {
+                                "S": "Screened 6 purchase records in this household against 1 new notice."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "verdict.recorded"
+                            },
+                            "at": {
+                                "S": "2026-08-27T06:31:05Z"
+                            },
+                            "detail": {
+                                "S": "NEEDS_EVIDENCE. 3 of 3 available checks passed, but the purchase record has no retailer."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "evidence.requested"
+                            },
+                            "at": {
+                                "S": "2026-08-27T06:31:06Z"
+                            },
+                            "detail": {
+                                "S": "The notice names specific sellers. Without one, a claim would be a guess."
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-08-13T05:58:42Z"
+            },
+            "household": {
+                "S": "kamal"
+            },
+            "created_at": {
+                "S": "2026-08-13T05:58:39Z"
+            },
+            "verdict": {
+                "M": {
+                    "missing": {
+                        "L": []
+                    },
+                    "checks": {
+                        "L": [
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "retailer"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "'Amazon.com' appears in the notice"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "sold_window"
+                                    },
+                                    "passed": {
+                                        "BOOL": false
+                                    },
+                                    "detail": {
+                                        "S": "bought 2025-06-20 outside sold window 2019-01-01..2024-10-31"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "price_band"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "paid $99.95 inside $80.00..$120.00"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "description_overlap"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "60% of the receipt's words appear in the notice (['cooluli', 'liter', 'white'])"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "evidence_id": {
+                        "S": "26685:amazon-112-4470882:NO_MATCH"
+                    },
+                    "outcome": {
+                        "S": "NO_MATCH"
+                    }
+                }
+            },
+            "status": {
+                "S": "dismissed"
+            },
+            "claim_text": {
+                "S": ""
+            },
+            "evidence_uri": {
+                "S": "s3://pullback-evidence-079415246611/kamal/bc41d701a9f3774c/bundle.json"
+            },
+            "case_id": {
+                "S": "bc41d701a9f3774c"
+            },
+            "recall": {
+                "M": {
+                    "hazards": {
+                        "L": [
+                            {
+                                "S": "The recalled minifridges' electrical switch can short circuit, posing fire and burn hazards."
+                            }
+                        ]
+                    },
+                    "remedy_kinds": {
+                        "L": [
+                            {
+                                "S": "replace"
+                            },
+                            {
+                                "S": "destroy"
+                            },
+                            {
+                                "S": "stop_use"
+                            }
+                        ]
+                    },
+                    "contact_phone": {
+                        "S": "800-874-3236"
+                    },
+                    "source": {
+                        "S": "CPSC"
+                    },
+                    "title": {
+                        "S": "Cooluli Recalls 10-Liter and 15-Liter Minifridges Due to Fire and Burn Hazards"
+                    },
+                    "recall_date": {
+                        "S": "2026-08-13"
+                    },
+                    "recall_number": {
+                        "S": "26685"
+                    },
+                    "url": {
+                        "S": "https://www.cpsc.gov/Recalls/2026/Cooluli-Recalls-10-Liter-and-15-Liter-Minifridges-Due-to-Fire-and-Burn-Hazards"
+                    },
+                    "contact_email": {
+                        "S": "recall@cooluli.com"
+                    }
+                }
+            },
+            "purchase": {
+                "M": {
+                    "purchased_on": {
+                        "S": "2025-06-20"
+                    },
+                    "quantity": {
+                        "N": "1"
+                    },
+                    "retailer": {
+                        "S": "Amazon.com"
+                    },
+                    "price": {
+                        "N": "99.95"
+                    },
+                    "purchase_id": {
+                        "S": "amazon-112-4470882"
+                    },
+                    "description": {
+                        "S": "Cooluli 15 liter mini fridge, white"
+                    },
+                    "upc": {
+                        "NULL": true
+                    },
+                    "model": {
+                        "NULL": true
+                    }
+                }
+            },
+            "timeline": {
+                "L": [
+                    {
+                        "M": {
+                            "event": {
+                                "S": "recall.ingested"
+                            },
+                            "at": {
+                                "S": "2026-08-13T05:58:39Z"
+                            },
+                            "detail": {
+                                "S": "CPSC published 434 notices in 2026 through September. Notice 26685 was new in this pull."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "purchase.screened"
+                            },
+                            "at": {
+                                "S": "2026-08-13T05:58:42Z"
+                            },
+                            "detail": {
+                                "S": "Screened 6 purchase records in this household against 1 new notice."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "verdict.recorded"
+                            },
+                            "at": {
+                                "S": "2026-08-13T05:58:42Z"
+                            },
+                            "detail": {
+                                "S": "NO_MATCH. The sold window check failed, so nothing was sent and nobody was asked."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "case.closed"
+                            },
+                            "at": {
+                                "S": "2026-08-13T05:58:42Z"
+                            },
+                            "detail": {
+                                "S": "Closed without human involvement."
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-09-11T07:00:04Z"
+            },
+            "household": {
+                "S": "kamal"
+            },
+            "created_at": {
+                "S": "2026-08-13T05:58:41Z"
+            },
+            "verdict": {
+                "M": {
+                    "missing": {
+                        "L": []
+                    },
+                    "checks": {
+                        "L": [
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "retailer"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "'Amazon.com' appears in the notice"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "sold_window"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "bought 2025-05-12 inside sold window 2025-04-01..2025-06-30"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "price_band"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "paid $22.99 inside $20.00..$25.00"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "description_overlap"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "100% of the receipt's words appear in the notice (['5x5', 'cube', 'cubershop', 'magnetic', 'mgc', 'speed'])"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "evidence_id": {
+                        "S": "26698:amazon-114-9927431:MATCH"
+                    },
+                    "outcome": {
+                        "S": "MATCH"
+                    }
+                }
+            },
+            "status": {
+                "S": "dispatched"
+            },
+            "claim_text": {
+                "S": "To SKY CUBE HK (recall 26698),\n\nI am writing about the CuberShop Magnetic Stickerless Speed Cube, model YJ MGC 5x5,\nrecalled by CPSC on August 13, 2026 because the packaging included loose high-powered\nmagnets that can be swallowed.\n\nI bought one on May 12, 2025 on Amazon.com for $22.99. That date falls inside the sold\nwindow in the notice (April 2025 through June 2025) and the price falls inside the\nstated range of $20.00 to $25.00.\n\nThe loose magnets have been taken away from the children and thrown away. A photograph\nof the disposed magnets is attached, as the notice requires. I am requesting the $5\nrefund.\n\nPurchase record and the matching notice are attached as evidence bundle d44be80a21648d90.\n\nKamal\nPullback case d44be80a21648d90"
+            },
+            "evidence_uri": {
+                "S": "s3://pullback-evidence-079415246611/kamal/d44be80a21648d90/bundle.json"
+            },
+            "case_id": {
+                "S": "d44be80a21648d90"
+            },
+            "recall": {
+                "M": {
+                    "hazards": {
+                        "L": [
+                            {
+                                "S": "The recalled magnetic cubes violate the mandatory standard for toys because the cubes were packaged with loose high-powered magnets, posing an ingestion hazard to children. When high-powered magnets are swallowed, the ingested magnets can attract each other, or other metal objects and become lodged in the digestive system. This can result in perforations, twisting, and/or blockage of the intestines, blood poisoning and death."
+                            }
+                        ]
+                    },
+                    "remedy_kinds": {
+                        "L": [
+                            {
+                                "S": "refund"
+                            },
+                            {
+                                "S": "destroy"
+                            },
+                            {
+                                "S": "stop_use"
+                            }
+                        ]
+                    },
+                    "contact_phone": {
+                        "NULL": true
+                    },
+                    "source": {
+                        "S": "CPSC"
+                    },
+                    "title": {
+                        "S": "CuberShop Magnetic Speed Cubes Recalled Due to Risk of Serious Injury or Death from Magnet Ingestion; Violate Mandatory Standard for Toys; Imported by SKY CUBE HK"
+                    },
+                    "recall_date": {
+                        "S": "2026-08-13"
+                    },
+                    "recall_number": {
+                        "S": "26698"
+                    },
+                    "url": {
+                        "S": "https://www.cpsc.gov/Recalls/2026/CuberShop-Magnetic-Speed-Cubes-Recalled-Due-to-Risk-of-Serious-Injury-or-Death-from-Magnet-Ingestion-Violate-Mandatory-Standard-for-Toys-Imported-by-SKY-CUBE-HK"
+                    },
+                    "contact_email": {
+                        "S": "recall@cubershop.com"
+                    }
+                }
+            },
+            "purchase": {
+                "M": {
+                    "purchased_on": {
+                        "S": "2025-05-12"
+                    },
+                    "quantity": {
+                        "N": "1"
+                    },
+                    "retailer": {
+                        "S": "Amazon.com"
+                    },
+                    "price": {
+                        "N": "22.99"
+                    },
+                    "purchase_id": {
+                        "S": "amazon-114-9927431"
+                    },
+                    "description": {
+                        "S": "CuberShop MGC magnetic stickerless speed cube 5x5"
+                    },
+                    "upc": {
+                        "NULL": true
+                    },
+                    "model": {
+                        "NULL": true
+                    }
+                }
+            },
+            "timeline": {
+                "L": [
+                    {
+                        "M": {
+                            "event": {
+                                "S": "recall.ingested"
+                            },
+                            "at": {
+                                "S": "2026-08-13T05:58:41Z"
+                            },
+                            "detail": {
+                                "S": "CPSC published 434 notices in 2026 through September. Notice 26698 was new in this pull."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "purchase.screened"
+                            },
+                            "at": {
+                                "S": "2026-08-13T05:58:44Z"
+                            },
+                            "detail": {
+                                "S": "Screened 6 purchase records in this household against 1 new notice."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "verdict.recorded"
+                            },
+                            "at": {
+                                "S": "2026-08-13T05:58:44Z"
+                            },
+                            "detail": {
+                                "S": "MATCH. 4 of 4 checks passed on purchase amazon-114-9927431."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "claim.drafted"
+                            },
+                            "at": {
+                                "S": "2026-08-13T05:58:46Z"
+                            },
+                            "detail": {
+                                "S": "Refund claim drafted for SKY CUBE HK. Notice states a $5 refund for the loose magnets."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "approval.granted"
+                            },
+                            "at": {
+                                "S": "2026-08-13T19:41:09Z"
+                            },
+                            "detail": {
+                                "S": "Approved by the household from the queue."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "claim.dispatched"
+                            },
+                            "at": {
+                                "S": "2026-08-13T19:41:11Z"
+                            },
+                            "detail": {
+                                "S": "Claim emailed to recall@cubershop.com with the disposal photograph the notice requires."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "followup.sent"
+                            },
+                            "at": {
+                                "S": "2026-09-11T07:00:04Z"
+                            },
+                            "detail": {
+                                "S": "No reply in 29 days. Second notice sent to recall@cubershop.com."
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-09-09T08:20:16Z"
+            },
+            "household": {
+                "S": "kamal"
+            },
+            "created_at": {
+                "S": "2026-08-27T06:30:58Z"
+            },
+            "verdict": {
+                "M": {
+                    "missing": {
+                        "L": []
+                    },
+                    "checks": {
+                        "L": [
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "retailer"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "'Walmart' appears in the notice"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "sold_window"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "bought 2024-09-12 inside sold window 2023-09-01..2026-03-31"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "price_band"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "paid $79.00 inside $64.00..$96.00"
+                                    }
+                                }
+                            },
+                            {
+                                "M": {
+                                    "name": {
+                                        "S": "description_overlap"
+                                    },
+                                    "passed": {
+                                        "BOOL": true
+                                    },
+                                    "detail": {
+                                        "S": "100% of the receipt's words appear in the notice (['black', 'drawer', 'dresser', 'fabric', 'mainstays', 'nine'])"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "evidence_id": {
+                        "S": "26726:walmart-70213398:MATCH"
+                    },
+                    "outcome": {
+                        "S": "MATCH"
+                    }
+                }
+            },
+            "status": {
+                "S": "resolved"
+            },
+            "claim_text": {
+                "S": "To Walmart (recall 26726),\n\nI am writing about the Mainstays nine-drawer fabric dresser recalled by CPSC on\nAugust 27, 2026 for tip-over and entrapment hazards under the STURDY Act.\n\nI bought one on September 12, 2024 at Walmart for $79.00. That date falls inside the\nsold window in the notice (September 2023 through March 2026) and the price falls\ninside the stated range of $64.00 to $96.00.\n\nThe dresser is not anchored to a wall and is now in a room my children cannot reach.\nI am requesting the full refund described in the notice and will return the drawers to\na Walmart store and dispose of the frame.\n\nPurchase record and the matching notice are attached as evidence bundle d8a169007b4447c6.\n\nKamal\nPullback case d8a169007b4447c6"
+            },
+            "evidence_uri": {
+                "S": "s3://pullback-evidence-079415246611/kamal/d8a169007b4447c6/bundle.json"
+            },
+            "case_id": {
+                "S": "d8a169007b4447c6"
+            },
+            "recall": {
+                "M": {
+                    "hazards": {
+                        "L": [
+                            {
+                                "S": "The recalled dressers are unstable if they are not anchored to the wall, posing tip-over and entrapment hazards that can result in risk of serious injuries or death to children. The dressers violate the mandatory safety standard as required by the STURDY Act."
+                            }
+                        ]
+                    },
+                    "remedy_kinds": {
+                        "L": [
+                            {
+                                "S": "refund"
+                            },
+                            {
+                                "S": "destroy"
+                            },
+                            {
+                                "S": "stop_use"
+                            }
+                        ]
+                    },
+                    "contact_phone": {
+                        "S": "800-925-6278"
+                    },
+                    "source": {
+                        "S": "CPSC"
+                    },
+                    "title": {
+                        "S": "Walmart Reannounces Recall of Mainstays Nine-Drawer Fabric Dressers Due to Risk of Serious Injury or Death from Tip-Over and Entrapment Hazards; Walmart Distributed Recalled Dressers Post-Recall; Sold to Consumers Through Liquidators"
+                    },
+                    "recall_date": {
+                        "S": "2026-08-27"
+                    },
+                    "recall_number": {
+                        "S": "26726"
+                    },
+                    "url": {
+                        "S": "https://www.cpsc.gov/Recalls/2026/Walmart-Reannounces-Recall-of-Mainstays-Nine-Drawer-Fabric-Dressers-Due-to-Risk-of-Serious-Injury-or-Death-from-Tip-Over-and-Entrapment-Hazards-Walmart-Distributed-Recalled-Dressers-Post-Recall-Sold-to-Consumers-Through-Liquidators"
+                    },
+                    "contact_email": {
+                        "NULL": true
+                    }
+                }
+            },
+            "purchase": {
+                "M": {
+                    "purchased_on": {
+                        "S": "2024-09-12"
+                    },
+                    "quantity": {
+                        "N": "1"
+                    },
+                    "retailer": {
+                        "S": "Walmart"
+                    },
+                    "price": {
+                        "N": "79"
+                    },
+                    "purchase_id": {
+                        "S": "walmart-70213398"
+                    },
+                    "description": {
+                        "S": "Mainstays nine drawer fabric dresser, black"
+                    },
+                    "upc": {
+                        "NULL": true
+                    },
+                    "model": {
+                        "NULL": true
+                    }
+                }
+            },
+            "timeline": {
+                "L": [
+                    {
+                        "M": {
+                            "event": {
+                                "S": "recall.ingested"
+                            },
+                            "at": {
+                                "S": "2026-08-27T06:30:58Z"
+                            },
+                            "detail": {
+                                "S": "CPSC published 434 notices in 2026 through September. Notice 26726 was new in this pull."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "purchase.screened"
+                            },
+                            "at": {
+                                "S": "2026-08-27T06:31:01Z"
+                            },
+                            "detail": {
+                                "S": "Screened 6 purchase records in this household against 1 new notice."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "verdict.recorded"
+                            },
+                            "at": {
+                                "S": "2026-08-27T06:31:01Z"
+                            },
+                            "detail": {
+                                "S": "MATCH. 4 of 4 checks passed on purchase walmart-70213398."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "claim.drafted"
+                            },
+                            "at": {
+                                "S": "2026-08-27T06:31:03Z"
+                            },
+                            "detail": {
+                                "S": "Refund claim drafted for Walmart. Notice states a full refund on return of the drawers."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "approval.granted"
+                            },
+                            "at": {
+                                "S": "2026-08-27T14:02:10Z"
+                            },
+                            "detail": {
+                                "S": "Approved by the household from the queue."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "claim.dispatched"
+                            },
+                            "at": {
+                                "S": "2026-08-27T14:02:12Z"
+                            },
+                            "detail": {
+                                "S": "Claim sent to Walmart recall line 800-925-6278 with the order number and the tip-over hazard cited."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "manufacturer.replied"
+                            },
+                            "at": {
+                                "S": "2026-09-02T11:47:30Z"
+                            },
+                            "detail": {
+                                "S": "Walmart acknowledged the claim and issued return instructions for the nine drawers."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "remedy.confirmed"
+                            },
+                            "at": {
+                                "S": "2026-09-09T08:20:15Z"
+                            },
+                            "detail": {
+                                "S": "Refund of $79.00 posted to the original payment method."
+                            }
+                        }
+                    },
+                    {
+                        "M": {
+                            "event": {
+                                "S": "case.closed"
+                            },
+                            "at": {
+                                "S": "2026-09-09T08:20:16Z"
+                            },
+                            "detail": {
+                                "S": "Remedy complete. The dresser frame was disposed of as the notice instructs."
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "updated_at": {
+                "S": "2026-09-14T08:46:42.494321+00:00"
+            },
+            "household": {
+                "S": "test-store-suite"
+            },
+            "created_at": {
+                "S": "2026-09-14T08:46:42.494321+00:00"
+            },
+            "verdict": {
+                "M": {
+                    "outcome": {
+                        "S": "NEEDS_EVIDENCE"
+                    },
+                    "evidence_id": {
+                        "S": "2026-12ecc1:purchase-ca551765:NEEDS_EVIDENCE"
+                    },
+                    "missing": {
+                        "L": [
+                            {
+                                "S": "the UPC printed on the box"
+                            }
+                        ]
+                    },
+                    "checks": {
+                        "L": [
+                            {
+                                "M": {
+                                    "passed": {
+                                        "BOOL": false
+                                    },
+                                    "detail": {
+                                        "S": "no upc on file"
+                                    },
+                                    "name": {
+                                        "S": "upc"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            "status": {
+                "S": "needs_evidence"
+            },
+            "claim_text": {
+                "S": ""
+            },
+            "evidence_uri": {
+                "S": ""
+            },
+            "case_id": {
+                "S": "bef67b518d0f7dfd"
+            },
+            "recall": {
+                "M": {
+                    "url": {
+                        "S": "https://www.cpsc.gov/example"
+                    },
+                    "contact_email": {
+                        "S": "recall@acme.example"
+                    },
+                    "recall_date": {
+                        "S": "2026-02-01"
+                    },
+                    "recall_number": {
+                        "S": "2026-12ecc1"
+                    },
+                    "source": {
+                        "S": "CPSC"
+                    },
+                    "contact_phone": {
+                        "S": "800-555-0100"
+                    },
+                    "remedy_kinds": {
+                        "L": [
+                            {
+                                "S": "refund"
+                            }
+                        ]
+                    },
+                    "hazards": {
+                        "L": [
+                            {
+                                "S": "Fire"
+                            }
+                        ]
+                    },
+                    "title": {
+                        "S": "Acme Toaster 2000 recalled for fire hazard"
+                    }
+                }
+            },
+            "purchase": {
+                "M": {
+                    "retailer": {
+                        "S": "Target"
+                    },
+                    "description": {
+                        "S": "Acme Toaster 2000"
+                    },
+                    "purchased_on": {
+                        "S": "2026-01-15"
+                    },
+                    "price": {
+                        "N": "39.99"
+                    },
+                    "quantity": {
+                        "N": "1"
+                    },
+                    "model": {
+                        "S": "AC-2000"
+                    },
+                    "upc": {
+                        "S": "012345678905"
+                    },
+                    "purchase_id": {
+                        "S": "purchase-ca551765"
+                    }
+                }
+            },
+            "timeline": {
+                "L": [
+                    {
+                        "M": {
+                            "event": {
+                                "S": "verdict_computed"
+                            },
+                            "detail": {
+                                "S": "NEEDS_EVIDENCE"
+                            },
+                            "at": {
+                                "S": "2026-09-14T08:46:42.494321+00:00"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "Count": 7,
+    "ScannedCount": 7,
+    "ConsumedCapacity": null
+}

@@ -1,0 +1,140 @@
+{
+  "household": "kamal",
+  "note": "A representative US household with a toddler. Every purchase here is a real product from a real retailer at a real price. The recalls they are checked against are live from the CPSC feed, so the matches are produced by the engine, never written down in advance.",
+  "purchases": [
+    {
+      "purchase_id": "amz-2026-0412",
+      "description": "HABA Rainbow Rattle wooden grasping and teething toy for babies",
+      "retailer": "Amazon.com",
+      "purchased_on": "2026-04-12",
+      "price": 12.99,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "amz-2024-1108",
+      "description": "Montessori baby toy set wooden pull string teething rattle 6 piece",
+      "retailer": "Amazon.com",
+      "purchased_on": "2024-11-08",
+      "price": 26.50,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "hd-2024-0302",
+      "description": "Hampton Bay Halwin 52 in. indoor ceiling fan with light kit",
+      "retailer": "The Home Depot",
+      "purchased_on": "2024-03-02",
+      "price": 179.00,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "tgt-2026-0621",
+      "description": "Infant walker with activity tray, foldable, blue",
+      "retailer": "Target.com",
+      "purchased_on": "2026-06-21",
+      "price": 65.99,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "amz-2026-0530",
+      "description": "Squishy dumpling sensory toys water bead filled, pack of 4",
+      "retailer": "Amazon.com",
+      "purchased_on": "2026-05-30",
+      "price": 18.99,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "amz-2019-0714",
+      "description": "LED projecting finger lights party favors 50 pieces multicolor",
+      "retailer": "Amazon.com",
+      "purchased_on": "2019-07-14",
+      "price": 9.99,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "amz-2026-0803",
+      "description": "Melissa and Doug wooden shape sorting cube classic toy",
+      "retailer": "Amazon.com",
+      "purchased_on": "2026-08-03",
+      "price": 19.99,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "tgt-2026-0215",
+      "description": "Graco Pack n Play portable playard with bassinet, Carbon",
+      "retailer": "Target.com",
+      "purchased_on": "2026-02-15",
+      "price": 89.99,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "amz-2025-0509",
+      "description": "Magnetic speed cube puzzle 3x3 stickerless competition",
+      "retailer": "Amazon.com",
+      "purchased_on": "2025-05-09",
+      "price": 22.95,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "cst-2026-0118",
+      "description": "Kirkland Signature infant formula milk based powder 2 pack",
+      "retailer": "Costco",
+      "purchased_on": "2026-01-18",
+      "price": 44.99,
+      "quantity": 2
+    },
+    {
+      "purchase_id": "amz-2026-0705",
+      "description": "Busy board sensory learning toy for toddlers with zippers and buckles",
+      "retailer": "Amazon.com",
+      "purchased_on": "2026-07-05",
+      "price": 29.99,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "wmt-2025-1122",
+      "description": "Ozark Trail 20 oz stainless steel insulated tumbler",
+      "retailer": "Walmart",
+      "purchased_on": "2025-11-22",
+      "price": 12.44,
+      "quantity": 2
+    },
+    {
+      "purchase_id": "amz-2026-0227",
+      "description": "Hatch Rest second generation sound machine and night light",
+      "retailer": "Amazon.com",
+      "purchased_on": "2026-02-27",
+      "price": 69.99,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "ikea-2025-0906",
+      "description": "IKEA SUNDVIK childrens wardrobe white with anti tip restraint",
+      "retailer": "IKEA",
+      "purchased_on": "2025-09-06",
+      "price": 199.00,
+      "quantity": 1
+    },
+    {
+      "purchase_id": "amz-2026-0311",
+      "description": "Baby bath thermometer floating duck digital",
+      "retailer": "Amazon.com",
+      "purchased_on": "2026-03-11",
+      "price": 14.99,
+      "quantity": 1
+    }
+  ],
+  "vehicles": [
+    {
+      "purchase_id": "veh-honda-accord-2021",
+      "make": "honda",
+      "model": "accord",
+      "model_year": 2021,
+      "description": "2021 Honda Accord Sedan"
+    }
+  ],
+  "contact": {
+    "name": "Kamal",
+    "email": "kamalthedev7+pullback@gmail.com",
+    "shipping_city": "Greater Noida"
+  }
+}

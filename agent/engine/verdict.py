@@ -47,6 +47,33 @@ class Purchase:
 
 
 @dataclass(frozen=True)
+class IdentityAssertion:
+    """The model's read on whether a receipt line and a notice describe one thing.
+
+    A receipt says "LED projecting finger lights party favors 50 pieces". The
+    notice says "Finger Light Toys ... 50 pieces in a box in white, blue, red
+    and green". Those share few words and are obviously the same object, which
+    is the one judgment here a person makes better than a token count.
+
+    This assertion may only replace `description_overlap`, the soft lexical
+    check. It can never touch retailer, sold window, price band or UPC. The
+    model is allowed to say "that is the same product"; it is never allowed to
+    say "buy it anyway, the dates do not matter".
+    """
+
+    same_product: bool
+    confidence: float
+    reason: str
+    asserted_by: str
+
+    MIN_CONFIDENCE = 0.7
+
+    @property
+    def usable(self) -> bool:
+        return self.confidence >= self.MIN_CONFIDENCE
+
+
+@dataclass(frozen=True)
 class Check:
     name: str
     passed: bool
@@ -166,7 +193,9 @@ def _text_check(purchase: Purchase, recall: Recall) -> Check:
     )
 
 
-def decide(purchase: Purchase, recall: Recall) -> Verdict:
+def decide(
+    purchase: Purchase, recall: Recall, identity: IdentityAssertion | None = None
+) -> Verdict:
     constraints = recall.constraints
     identifiers = [
         c for c in (_upc_check(purchase, constraints), _model_check(purchase, constraints)) if c
@@ -180,7 +209,14 @@ def decide(purchase: Purchase, recall: Recall) -> Verdict:
         )
         if c
     ]
-    text = _text_check(purchase, recall)
+    if identity is not None and identity.usable:
+        text = Check(
+            f"identity[{identity.asserted_by}]",
+            identity.same_product,
+            f"{identity.reason} (confidence {identity.confidence:.2f})",
+        )
+    else:
+        text = _text_check(purchase, recall)
     checks = tuple(identifiers + circumstantial + [text])
 
     def result(outcome: Outcome, missing: tuple[str, ...] = ()) -> Verdict:
