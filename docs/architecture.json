@@ -1,0 +1,426 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Pullback",
+    "output": "architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1240,
+      770
+    ],
+    "repository": {
+      "url": "https://github.com/kamalbuilds/pullback",
+      "revision": "9ea6ce719b3252200081a1a0eaba424f28390f1c"
+    },
+    "views": [
+      {
+        "id": "unattended",
+        "label": "The unattended run",
+        "focus": [
+          "feeds",
+          "extractor",
+          "scheduler",
+          "lambda",
+          "agent",
+          "dynamo"
+        ],
+        "note": "What happens every day with nobody watching: notices in, constraints out, cases written."
+      },
+      {
+        "id": "the-gate",
+        "label": "The gate on dispatch",
+        "focus": [
+          "agent",
+          "verdict",
+          "hook",
+          "dispatch"
+        ],
+        "note": "The model reads identity. The verdict engine decides. The hook cancels any dispatch that is not a MATCH."
+      },
+      {
+        "id": "the-one-decision",
+        "label": "The one human decision",
+        "focus": [
+          "dynamo",
+          "console",
+          "human",
+          "agent"
+        ],
+        "note": "The household is interrupted only when evidence is missing or a claim needs approval."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "feeds",
+      "type": "external",
+      "label": "Public recall feeds",
+      "sublabel": "CPSC, NHTSA, openFDA",
+      "tag": "live, no auth",
+      "pos": [
+        40,
+        150
+      ],
+      "size": [
+        170,
+        68
+      ],
+      "sources": [
+        {
+          "path": "agent/feeds/cpsc.py",
+          "line": 1,
+          "label": "feed adapters"
+        }
+      ]
+    },
+    {
+      "id": "extractor",
+      "type": "backend",
+      "label": "Constraint extractor",
+      "sublabel": "prose to checkable facts",
+      "tag": "94% window, 94% price",
+      "pos": [
+        300,
+        150
+      ],
+      "size": [
+        180,
+        68
+      ],
+      "sources": [
+        {
+          "path": "agent/feeds/cpsc.py",
+          "line": 92,
+          "label": "extract_constraints"
+        }
+      ]
+    },
+    {
+      "id": "verdict",
+      "type": "backend",
+      "label": "Verdict engine",
+      "sublabel": "MATCH, NEEDS_EVIDENCE, NO_MATCH",
+      "tag": "no prompt reaches it",
+      "pos": [
+        580,
+        150
+      ],
+      "size": [
+        230,
+        68
+      ],
+      "sources": [
+        {
+          "path": "agent/engine/verdict.py",
+          "line": 1,
+          "label": "decide()"
+        }
+      ]
+    },
+    {
+      "id": "scheduler",
+      "type": "cloud",
+      "label": "EventBridge Scheduler",
+      "sublabel": "daily, unattended",
+      "pos": [
+        40,
+        380
+      ],
+      "size": [
+        170,
+        68
+      ]
+    },
+    {
+      "id": "lambda",
+      "type": "cloud",
+      "label": "AWS Lambda",
+      "sublabel": "pullback-run",
+      "pos": [
+        300,
+        390
+      ],
+      "size": [
+        170,
+        68
+      ],
+      "sources": [
+        {
+          "path": "infra/lambda_handler.py",
+          "line": 1,
+          "label": "handler"
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "Strands agent",
+      "sublabel": "six tools, reads identity",
+      "tag": "Anthropic, not Bedrock",
+      "pos": [
+        580,
+        390
+      ],
+      "size": [
+        230,
+        68
+      ],
+      "sources": [
+        {
+          "path": "agent/pullback_agent.py",
+          "line": 1,
+          "label": "build_agent"
+        }
+      ]
+    },
+    {
+      "id": "hook",
+      "type": "security",
+      "label": "BeforeToolCallEvent hook",
+      "sublabel": "cancels dispatch_remedy",
+      "tag": "delete it, tests go red",
+      "pos": [
+        890,
+        390
+      ],
+      "size": [
+        210,
+        68
+      ],
+      "sources": [
+        {
+          "path": "agent/pullback_agent.py",
+          "line": 96,
+          "label": "RemedyVeto"
+        }
+      ]
+    },
+    {
+      "id": "dispatch",
+      "type": "external",
+      "label": "Manufacturer",
+      "sublabel": "contact on the notice",
+      "pos": [
+        1030,
+        180
+      ],
+      "size": [
+        170,
+        68
+      ]
+    },
+    {
+      "id": "s3",
+      "type": "cloud",
+      "label": "S3 evidence packs",
+      "sublabel": "case, decision, claim",
+      "pos": [
+        300,
+        620
+      ],
+      "size": [
+        190,
+        68
+      ],
+      "sources": [
+        {
+          "path": "agent/evidence.py",
+          "line": 1,
+          "label": "write_pack"
+        }
+      ]
+    },
+    {
+      "id": "dynamo",
+      "type": "database",
+      "label": "DynamoDB",
+      "sublabel": "cases and recalls",
+      "tag": "idempotency key",
+      "pos": [
+        610,
+        620
+      ],
+      "size": [
+        200,
+        68
+      ],
+      "sources": [
+        {
+          "path": "agent/store.py",
+          "line": 1,
+          "label": "CaseStore"
+        }
+      ]
+    },
+    {
+      "id": "console",
+      "type": "frontend",
+      "label": "Console on Vercel",
+      "sublabel": "a queue, usually empty",
+      "pos": [
+        890,
+        620
+      ],
+      "size": [
+        190,
+        68
+      ]
+    },
+    {
+      "id": "human",
+      "type": "external",
+      "label": "Household",
+      "sublabel": "touched once per case",
+      "pos": [
+        1030,
+        480
+      ],
+      "size": [
+        170,
+        68
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "AWS us-east-1 (AISPL: no Bedrock)",
+      "wraps": [
+        "scheduler",
+        "lambda",
+        "s3",
+        "dynamo"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "feeds-in",
+      "from": "feeds",
+      "to": "extractor",
+      "label": "fetch notices"
+    },
+    {
+      "id": "constraints-out",
+      "from": "extractor",
+      "to": "verdict",
+      "label": "constraints"
+    },
+    {
+      "id": "tick",
+      "from": "scheduler",
+      "to": "lambda",
+      "label": "daily tick"
+    },
+    {
+      "id": "run",
+      "from": "lambda",
+      "to": "agent",
+      "label": "one pass",
+      "variant": "emphasis"
+    },
+    {
+      "id": "identity",
+      "from": "agent",
+      "to": "verdict",
+      "label": "identity read",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelDy": -46
+    },
+    {
+      "id": "ruling",
+      "from": "verdict",
+      "to": "hook",
+      "label": "must be MATCH",
+      "variant": "security",
+      "fromSide": "right",
+      "toSide": "top"
+    },
+    {
+      "id": "attempt",
+      "from": "agent",
+      "to": "hook",
+      "label": "dispatch_remedy"
+    },
+    {
+      "id": "filed",
+      "from": "hook",
+      "to": "dispatch",
+      "label": "claim filed",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "cases",
+      "from": "agent",
+      "to": "dynamo",
+      "label": "cases",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "packs",
+      "from": "agent",
+      "to": "s3",
+      "label": "evidence pack",
+      "variant": "dashed",
+      "fromSide": "left",
+      "toSide": "top"
+    },
+    {
+      "id": "read",
+      "from": "dynamo",
+      "to": "console",
+      "label": "read cases"
+    },
+    {
+      "id": "approve",
+      "from": "console",
+      "to": "dynamo",
+      "label": "approve, decline",
+      "fromSide": "bottom",
+      "toSide": "bottom"
+    },
+    {
+      "id": "ask",
+      "from": "console",
+      "to": "human",
+      "label": "one question",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "What the model decides",
+      "items": [
+        "Whether a receipt line and a notice describe the same object",
+        "How to word the claim, citing the recall number",
+        "Which single question to ask when evidence is missing"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "What it can never decide",
+      "items": [
+        "Whether the purchase date falls inside the sold window",
+        "Whether the price falls inside the notice's band",
+        "Whether a claim may be filed at all"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "What survives the tab closing",
+      "items": [
+        "Cases keyed by a deterministic id, so a rerun never files twice",
+        "An evidence pack a person can audit months later",
+        "A daily run that nobody has to remember"
+      ]
+    }
+  ]
+}

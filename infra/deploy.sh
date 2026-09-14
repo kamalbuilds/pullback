@@ -131,6 +131,11 @@ mkdir -p "${BUILD_DIR}"
 cp -R "${REPO_ROOT}/agent" "${BUILD_DIR}/agent"
 find "${BUILD_DIR}/agent" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 cp "${REPO_ROOT}/infra/lambda_handler.py" "${BUILD_DIR}/lambda_handler.py"
+# agent.engine.scan.load_household() reads data/household.json relative to
+# the repo root; only that one file is needed in the zip (the multi-MB raw
+# feed dumps in data/ are not read by anything this Lambda imports).
+mkdir -p "${BUILD_DIR}/data"
+cp "${REPO_ROOT}/data/household.json" "${BUILD_DIR}/data/household.json"
 ( cd "${BUILD_DIR}" && zip -r -q "${ZIP_PATH}" . -x '*.pyc' )
 echo "package: ${ZIP_PATH} ($(du -h "${ZIP_PATH}" | cut -f1))"
 
