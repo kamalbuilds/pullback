@@ -12,3 +12,5 @@ console/.next/
 console/.vercel/
 console/.local/
 docs/*.visual-check.*
+build.zip
+*.zip
